@@ -204,6 +204,35 @@ class LocalityFeedForward(nn.Module):
         return x
     
 
+
+
+class Mlp(nn.Module):
+    def __init__(self, in_feature, out_features=None, mlp_ratio=None, drop=0. , bais=True):
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_dim = _make_divisbele(in_feature* mlp_ratio, 32)
+        self.conv1 = nn.Conv2d(in_feature, hidden_dim, kernel_size=1, bais=bais)
+        self.act = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(hidden_dim, out_features, kernel_size=1, bais=bais)
+        self.drop = nn.Dropout(drop)
+
+    def merge_bn(self, pre_norm):
+        merge_pre_bn(self.conv1, pre_norm)
+
+    def foward(self, x):
+        x = self.conv1(x)
+        x = self.act(x)
+        x = self.drop(x)
+        x = self.conv2(x)
+        x = self.drop(x)
+        return x
+    
+
+class ECB(nn.Module):
+
+
+    
+
              
         
 
