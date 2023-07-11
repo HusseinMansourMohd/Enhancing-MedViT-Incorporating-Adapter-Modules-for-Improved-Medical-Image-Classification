@@ -229,7 +229,41 @@ class Mlp(nn.Module):
     
 
 class ECB(nn.Module):
+    """
+        Efficient Convolution Block
+    """
+    def __init__(self, in_channels,out_channels, stride=1, path_drop=0.
+                 drop=0, head_dim=32, mlp_ratio=3):
+        super(ECB,self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        norm_layer = partial(nn.BatchNorm2d,eps=NORM_EPS)
+        assert out_channels % head_dim == 0
 
+        self.patch_embed = PatchEmbed(in_channels, out_channels, 1, mlp_ratio, reduction=out_channels)
+        self.mcha = MCHA(out_channels,head_dims)
+        self.attention_path_dropout = DropPath(path_drop)
+
+        self.norm = norm_layer(out_channels)
+        #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio)
+        #self.mlp_path_dropout = DropPath(path_dropout)
+        self.is_bn_merged = False
+
+    def merge_bn(self):
+        if not self.is_bn_merged:
+            self.mlp.merge_bn(self.norm)
+            self.is_bn_merged = True
+
+    def forward(self, x):
+        x = self.patch_embed(x)
+        x = x + self.attention_path_dropout(self.mhca(x))
+        if not torch.onnx.is_in_onnx_export() and not self.is_bn_merged:
+            out = self.norm(x)
+        else:
+            out = x
+        #x = x + self.mlp_path_dropout(self.mlp(out))
+        x = x + self.conv(out) # (B, dim, 14, 14)
+        return x
 
     
 
