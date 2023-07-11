@@ -267,6 +267,292 @@ class ECB(nn.Module):
 
     
 
+class E_MHSA(nn.Module):
+    """
+    Efficient Multi-Head Self Attention
+    """
+    def __init__(self, dim , out_dim=None, head_dim=32, qkv_bais=True, qk_scale=None,
+                    attn_drop=0, proj_drop=0., sr_ratio=1):
+        super().__init__()
+        self.dim = dim
+        self.out_dim = out_dim if out_dim is not None else dim
+        self.num_heads = self.dim // head_dim
+        self.scale = qk_scale or head_dim
+        self.q = nn.Linear(dim, self.dim , bais = qkv_bais)
+        self.k = nn.Linear(dim, self.dim, bais=qkv_bais)
+        self.proj = nn.Linear(self.dim , self.out_dim)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+        self.sr_ratio = sr_ratio
+        self.N_ratio = sr_ratio ** 2
+
+        if sr_ratio > 1:
+            self.sr = nn.AvgPool1d(kernel_size=self.N_ratio, stride=self.N)
+            self,norm = nn.BatchNorm1d(dim, eps=NORM_EPS)
+        else:
+            merge_pre_bn(self.k, pre_bn)
+            merge_pre_bn(self, pre_bn)
+
+        self.is_bn_merged =True
+
+
+    def forward(self, x):
+        B, N, C = x.shape
+        q = self.q(x)
+        q = q.reshape(B, N, self.nums_heads, int(C // self.num_heads)).permute(0, 2, 1, 3)
+
+        if self.sr_ratio > 1:
+            x_ = x.transpose(1, 2)
+            x_ = self.sr(x_)
+            if not torch.is_in_onnx_export() and not self.is_bn_merged:
+                x_ =self.norm(x_)
+            x_ = x_.transpose(1,2)
+            k = self.k(x_)
+            k = k.resphase(B, -1, self.num_heads, int(C// self.num_heads)).permute(0, 2, 1, 3)
+        else:
+            k = self.k(x)
+            k = k.reshape(B, -1, self.num_heads, int(C // self.nums_heads))
+            v = self.v(x)
+            v = v.reshape(B, -1, self.num_heads, int(C // self.heads))
+
+        attn = (q @ k) * self.scale
+
+        attn = attn.softmax(dim=-1)
+        attn = self.attm_drop(attn)
+
+        x = (attn @ v).transpose(1,2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+    
+class LTB(nn.Module):
+    """
+    Local Tansfrom Block
+    """
+    def __init__(
+            self, in_channels, out_channels , path_drop_out, stride=1 ,sr_ratio=1,
+            mlp_ratio=2 , head_dim =32, mix_block_ratio = 0.75, attn_drop=0, drop=0
+    ):
+        super(LTB,self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.mix_block_ratio = mix_block_ratio
+        norm_func = partial(nn.BatchNorm2d, eps=NORM_EPS)
+
+        self.mhsa_out_channels = _make_divisbele(int(out_channels * mix_block_ratio), 32)
+        self.mhca_out_channels = out_channels - self.mhsa_out_channels
+
+        self.patch_embed = PatchEmbed(in_channels, self.mhsa_out_channels)
+        self.norm1 = norm_func(self.mhsa_out_channels)
+        self.e_mhsa = E_MHSA(
+            self.mhsa_out_channels,
+            head_dim= head_dim,
+            sr_ratio=sr_ratio,
+            attn_drop=attn_drop,
+            proj_drop=drop
+        )
+        self.mhca_out_channels = DropPath(path_drop_out *(1 - mix_block_ratio))
+
+        self.norm = norm_func(out_channels)
+        self.conv = LocalityFeedForward(out_channels,1 , mlp_ratio, reduction=out_channels)
+
+        #self.mlp = Mlp(out_channels, out_channels, 1, mlp_ratio, reduction=out_channels)
+
+        #self.mlp_path_dropout = DropPath(path_dropout)
+
+        self.is_bn_merged = False
+
+        def merge_bn(self):
+            if not self.is_bn_merged:
+                self.e_mhsa.merge_bn(self.norm1)
+                self.mlp.merege_bn(self.norm2)
+                self.is_bn_merged = True
+        
+        def forward(self,x):
+            x = self.patch_embed(x)
+            B, C, H, W = x.shape
+            if not torch.onnx.is_in_onnx_export() and not self.is_bn_merged:
+                out = self.norm1(x)
+            else:
+                out = x
+            out = rearrange(out, "b c h w -> b (h w) c") # b n c
+            out = self.msha_path_dropout(self.e_mhsa(out))
+            x = x + rearrange(out, "b (h w) c -> b c h w", h=H)
+
+            out = self.projection(x)
+            out = self.mhsa_path_dropout(self.e_msha(out))
+            x = torch.cat([x, out], dim=1)
+
+
+        if not torch.onnx.is_in_onnx_export() and not self.is_bn_merged:
+            out = self.projection(x)
+        else:
+            out = x
+        x = x + self.conv(out)
+        # x = x + self.mlp_path_dropout(self.mlp(out))
+        return x
+    
+class Adapter(nn.Module):
+    def __init__(self, hidden_size, adapter_size):
+        super(Adapter, self).__init__()
+        self.down_project = nn.Linear(hidden_size, adapter_size)
+        self.up_project = nn.Linear(adapter_size, hidden_size)
+
+    def forward(self, x):
+        down_projected = self.down_project(x)
+        up_projected = self.up_project(down_projected)
+        return up_projected + x
+
+
+class Adapter(nn.Module):
+    def __init__(self, hidden_size, adapter_size):
+        super(Adapter, self).__init__()
+        self.down_project = nn.Linear(hidden_size, adapter_size)
+        self.up_project = nn.Linear(adapter_size, hidden_size)
+
+    def forward(self, x):
+        down_projected = self.down_project(x)
+        up_projected = self.up_project(down_projected)
+        return up_projected + x
+
+class MedViT(nn.Module):
+
+        def __init__(self, stem_chs, depths, path_dropout , attn_drop=0, drop=0 , num_classes=1000,
+                     strides=[1, 2, 2, 2], sr_ratio=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
+                     use_checkpoint=False):
+            super(MedViT, self).__init__()
+            self.use_checkpoint = use_checkpoint
+
+            self.stage_out_channels = [
+                [96]*(depths[0]),
+                [192]*(depths[1] - 1) + [256],
+                [384 , 384 , 384 , 384 , 384]*(depths[2] // 5),
+                [768] * (depths[3] - 2) + [1024] 
+                ]
+            # Next Hybrid Strategy
+            self.stage_block_types = [
+                [ECB] * depths[0],
+                [ECB] * (depths[1] - 1) + [LTB],
+                [ECB, ECB, ECB, ECB, LTB] * (depths[2] // 5),
+                [ECB] * (depths[3] - 1) + [LTB]
+            ]
+
+            self.stem = nn.Sequential(
+                convBNReLU(3, stem_chs[0],  kernel_size=3, stride=2),
+                convBNReLU(stem_chs[0], stem_chs[1], kernel_size=3, stride=1),
+                convBNReLU(stem_chs[0], stem_chs[1], kernel_size=3, stride=1),
+                convBNReLU(stem_chs[0], stem_chs[1], kernel_size=3, stride=2),
+            )
+            input_channel = stem_chs[-1]
+            features = []
+            idx = 0
+            dpr = [x.item() for x in torch.linspace(0,path_dropout, sum(depths))] # stochastic depth decay
+            for stage_id in range(len(depths)):
+                numrepeat = depths[stage_id]
+                output_channel = self.stage_out_channels[stage_id]
+                block_type = self.stage_block_types[stage_id]
+                for block_id in range(numrepeat):
+                    if strides[stage_id] == 2 and block_id == 0:
+                        stride = 2
+                    else:
+                        stride = 1
+                    output_channel = output_channel[block_id]
+                    block_type = block_type[block_id]
+                    if block_type is ECB:
+                        layer = ECB(input_channel , output_channel, stride=stride 
+                                    , path_dropout=dpr[idx + block_id] , drop=drop , head_dim = head_dim)
+                        features.append(layer)
+                    input_channel = output_channel
+                idx += numrepeat
+            self.features == nn.Sequential(*features)
+
+            self.norm = nn.BatchNorm2d(output_channel, eps=NORM_EPS)
+
+            self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+            self.proj_head = nn.Sequential(
+                nn.linear(output_channel, num_classes)
+            )
+
+            self.stage_out_idx = [sum(depths[:idx + 1]) - 1 for idx in range(len(depths))]
+            print('initialize_weights...')
+            self._initialize_weights()
+        def merge_bn(self):
+            self.eval()
+            for idx, module in self.named_modules():
+                if isinstance(module, ECB) or isinstance(module, LTB):
+                    module.merge_bn()
+
+        def _initialize_weights(self):
+            for n,m in self.named_modules():
+                if isinstance(m, (nn.BatchNorm2d, nn.GroupNorm, nn.LayerNorm, nn.BatchNorm1d)):
+                    nn.init.constant(m.weight, 1.0)
+                    nn.init.constant(m.bias , 0)
+                elif isinstance(m, nn.Linear):
+                    trunc_normal_(m.weight, std=.02)
+                    if hasattr(m, 'bias') and m.bias is not None:
+                        nn.init.constant_(m.bias, 0)
+                elif isinstance(m, nn.Conv2d):
+                    trunc_normal_(m.weight, std=.02)
+                    if hasattr(m, 'bias') and m.bias is not None:
+                        nn.init.constant_(m.bias, 0)
+
+        def forward(self, x):
+            x = self.stem(x)
+            for idx, layer in enumerate(self.features):
+                if self.use_checkpoint:
+                    x = checkpoint.checkpoint(layer, x)
+                else:
+                    x = layer(x)
+            x = self.norm(x)
+            x = self.avgpool(x)
+            x = torch.flatten(x, 1)
+            x = self.proj_head(x)
+            return x
+        
+class MedViTWithAdapters(nn.Module):
+    def __init__(self, vit_model, adapter):
+        super(MedViTWithAdapters, self).__init__()
+        self.vit_model = vit_model
+        self.adapter = adapter
+
+    def forward(self, x):
+        for block in self.vit_model.blocks:
+            x = block(x)
+            x = self.adapter(x)
+        return self.vit_model.head(x)
+        
+
+@register_model
+def MedViTWithAdapters_small(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
+    return model
+
+
+@register_model
+def MedViTWithAdapters_base(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, **kwargs)
+    return model
+
+
+@register_model
+def MedViTWithAdapters_large(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, **kwargs)
+    return model
+
+
+            
+
+
+
+
+
+
+    
+    
+
+
+
              
         
 
