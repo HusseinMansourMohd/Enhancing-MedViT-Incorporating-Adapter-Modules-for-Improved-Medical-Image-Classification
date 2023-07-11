@@ -92,6 +92,34 @@ class h_sigmoid(nn.Module):
         return x*self.sigmoid(x)
         
 
+class h_swish(nn.Module):
+    def __init__(self, implace=True):
+        super(h_swish, self).__init__()
+        self.relu = h_sigmoid(inplace=inplace)
+
+    def forward(self, x):
+        return x * self.sigmoid(x)
+    
+
+class ECALayer(nn.Module):
+    def __init__(self, channel, gamma=2 , b=1 , sigmoid=True):
+        super(ECALayer, self).__init__()
+        t = int(abs(math.log(channel,2)+ b)/ gamma)
+        k = t if t % 2 else t+1
+
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.conv = nn.conv1d(1,1, kernel_size=k , padding=k // 2, bais=False)
+        if sigmoid:
+            self.sigmoid = nn.Sigmoid()
+        else:
+            self.sigmoid = h_sigmoid()
+
+    def foward(self, x):
+        y = self.avg_pool(x)
+        y = self.conv(y.squeeze(-1).transpose(-1,2))
+        y = y.transpose(-1, -2).unsqueeze(-1)
+        y = self.sigmoid(y)
+        return x * y.expand_as(x)
     
 
         
