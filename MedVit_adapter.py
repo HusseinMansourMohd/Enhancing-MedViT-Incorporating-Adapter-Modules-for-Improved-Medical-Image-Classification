@@ -254,7 +254,7 @@ class ECB(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.adapter = Adapter(in_channels)
+        self.adapter = Adapter(56)
 
         norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
         assert out_channels % head_dim == 0
@@ -397,7 +397,7 @@ class LTB(nn.Module):
 
         #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio, drop=drop)
         #self.mlp_path_dropout = DropPath(path_dropout)
-        self.adapter = Adapter(in_channels)
+        self.adapter = Adapter(56)
         self.is_bn_merged = False
 
     def merge_bn(self):
