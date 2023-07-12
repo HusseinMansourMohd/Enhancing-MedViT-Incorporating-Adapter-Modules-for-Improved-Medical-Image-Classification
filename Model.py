@@ -521,24 +521,26 @@ class MedViTWithAdapters(nn.Module):
             x = block(x)
             x = self.adapter(x)
         return self.vit_model.head(x)
+    
+    @register_model
+    def MedViTWithAdapters_small(pretrained=False, pretrained_cfg=None, **kwargs):
+        model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
+        return model
+
+
+    @register_model
+    def MedViTWithAdapters_base(pretrained=False, pretrained_cfg=None, **kwargs):
+        model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, **kwargs)
+        return model
+
+
+    @register_model
+    def MedViTWithAdapters_large(pretrained=False, pretrained_cfg=None, **kwargs):
+        model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, **kwargs)
+        return model
         
 
-@register_model
-def MedViTWithAdapters_small(pretrained=False, pretrained_cfg=None, **kwargs):
-    model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
-    return model
 
-
-@register_model
-def MedViTWithAdapters_base(pretrained=False, pretrained_cfg=None, **kwargs):
-    model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, **kwargs)
-    return model
-
-
-@register_model
-def MedViTWithAdapters_large(pretrained=False, pretrained_cfg=None, **kwargs):
-    model = MedViTWithAdapters(stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, **kwargs)
-    return model
 
 
             
