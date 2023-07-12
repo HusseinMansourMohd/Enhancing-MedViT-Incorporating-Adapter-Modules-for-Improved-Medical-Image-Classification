@@ -1,6 +1,6 @@
-# Project Title: Enhancing MedViT: Incorporating Adapter Modules for Improved Medical Image Classification
+# Enhancing MedViT: Incorporating Adapter Modules for Improved Medical Image Classification
 
-# Project Description:
+### Description:
 
 This project aims to improve the performance of the MedViT model, a robust Vision Transformer (ViT) optimized for small medical datasets, by incorporating Adapter Modules. Unlike the typical application of ViT which requires large datasets, our implementation focuses on maximizing performance with smaller, more specific datasets that are typical in medical applications.
 
