@@ -210,6 +210,8 @@ class LocalityFeedForward(nn.Module):
         return x
 
 # Sample adapter module
+import torch.nn.functional as F
+
 class Adapter(nn.Module):
     def __init__(self, size):
         super(Adapter, self).__init__()
@@ -253,7 +255,7 @@ class ECB(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.adapter = Adapter(in_channels)
-        
+
         norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
         assert out_channels % head_dim == 0
 
