@@ -209,7 +209,17 @@ class LocalityFeedForward(nn.Module):
         x = x + self.conv(x)
         return x
 
+# Sample adapter module
+class Adapter(nn.Module):
+    def __init__(self, size):
+        super(Adapter, self).__init__()
+        self.down_project = nn.Linear(size, size//4)
+        self.up_project = nn.Linear(size//4, size)
 
+    def forward(self, x):
+        return self.up_project(F.relu(self.down_project(x))) + x
+    
+    
 class Mlp(nn.Module):
     def __init__(self, in_features, out_features=None, mlp_ratio=None, drop=0., bias=True):
         super().__init__()
@@ -268,8 +278,16 @@ class ECB(nn.Module):
         else:
             out = x
         #x = x + self.mlp_path_dropout(self.mlp(out))
+        out = self.adapter(out)
         x = x + self.conv(out) # (B, dim, 14, 14)
         return x
+    
+    def _initialize_weights(self):
+        super()._initialize_weights()
+
+        # Initialize adapter weights
+        nn.init.normal_(self.adapter.down_project.weight, std=0.001)
+        nn.init.normal_(self.adapter.up_project.weight, std=0.001)
 
 
 class E_MHSA(nn.Module):
@@ -398,9 +416,17 @@ class LTB(nn.Module):
             out = self.norm2(x)
         else:
             out = x
+        out = self.adapter(out)
         x = x + self.conv(out)
         #x = x + self.mlp_path_dropout(self.mlp(out))
         return x
+    
+    def _initialize_weights(self):
+        super()._initialize_weights()
+
+        # Initialize adapter weights
+        nn.init.normal_(self.adapter.down_project.weight, std=0.001)
+        nn.init.normal_(self.adapter.up_project.weight, std=0.001)
 
 
 class MedViT(nn.Module):
