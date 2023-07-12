@@ -254,6 +254,7 @@ class ECB(nn.Module):
         norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
         assert out_channels % head_dim == 0
 
+
         self.patch_embed = PatchEmbed(in_channels, out_channels, stride)
         self.mhca = MHCA(out_channels, head_dim)
         self.attention_path_dropout = DropPath(path_dropout)
@@ -261,6 +262,8 @@ class ECB(nn.Module):
         self.conv = LocalityFeedForward(out_channels, out_channels, 1, mlp_ratio, reduction=out_channels)
 
         self.norm = norm_layer(out_channels)
+        self.adapter = Adapter(in_channels)
+
         #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio, drop=drop, bias=True)
         #self.mlp_path_dropout = DropPath(path_dropout)
         self.is_bn_merged = False
@@ -278,8 +281,9 @@ class ECB(nn.Module):
         else:
             out = x
         #x = x + self.mlp_path_dropout(self.mlp(out))
-        out = self.adapter(out)
+        
         x = x + self.conv(out) # (B, dim, 14, 14)
+        x = self.adapter(x)
         return x
     
     def _initialize_weights(self):
@@ -388,7 +392,7 @@ class LTB(nn.Module):
 
         #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio, drop=drop)
         #self.mlp_path_dropout = DropPath(path_dropout)
-
+        self.adapter = Adapter(in_channels)
         self.is_bn_merged = False
 
     def merge_bn(self):
@@ -416,8 +420,9 @@ class LTB(nn.Module):
             out = self.norm2(x)
         else:
             out = x
-        out = self.adapter(out)
+        
         x = x + self.conv(out)
+        x = self.adapter(x)
         #x = x + self.mlp_path_dropout(self.mlp(out))
         return x
     
