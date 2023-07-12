@@ -249,8 +249,11 @@ class ECB(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, path_dropout=0,
                  drop=0, head_dim=32, mlp_ratio=3):
         super(ECB, self).__init__()
+
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.adapter = Adapter(in_channels)
+        
         norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
         assert out_channels % head_dim == 0
 
@@ -262,7 +265,7 @@ class ECB(nn.Module):
         self.conv = LocalityFeedForward(out_channels, out_channels, 1, mlp_ratio, reduction=out_channels)
 
         self.norm = norm_layer(out_channels)
-        self.adapter = Adapter(in_channels)
+        
 
         #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio, drop=drop, bias=True)
         #self.mlp_path_dropout = DropPath(path_dropout)
