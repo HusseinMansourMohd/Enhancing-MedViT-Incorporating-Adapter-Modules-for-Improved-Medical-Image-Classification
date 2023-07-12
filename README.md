@@ -1,4 +1,4 @@
-# Enhancing MedViT: Incorporating Adapter Modules for Improved Medical Image Classification
+# Enhancing MedViT: Incorporating Adapter Modules for Improved Small Medical Image Datasets.
 
 ## Description:
 
