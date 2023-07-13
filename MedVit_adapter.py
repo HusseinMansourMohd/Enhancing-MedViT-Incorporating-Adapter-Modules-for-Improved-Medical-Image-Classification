@@ -213,10 +213,10 @@ class LocalityFeedForward(nn.Module):
 import torch.nn.functional as F
 
 class Adapter(nn.Module):
-    def __init__(self, size):
+    def __init__(self, channels):
         super(Adapter, self).__init__()
-        self.down_project = nn.Linear(size, size//4)
-        self.up_project = nn.Linear(size//4, size)
+        self.down_project = nn.Conv2d(channels, channels//4, 1)
+        self.up_project = nn.Conv2d(channels//4, channels, 1)
 
     def forward(self, x):
         return self.up_project(F.relu(self.down_project(x))) + x
