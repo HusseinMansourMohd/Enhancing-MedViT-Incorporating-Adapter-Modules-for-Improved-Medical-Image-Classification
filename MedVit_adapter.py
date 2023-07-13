@@ -286,9 +286,10 @@ class ECB(nn.Module):
         else:
             out = x
         #x = x + self.mlp_path_dropout(self.mlp(out))
-        
-        x = x + self.conv(out) # (B, dim, 14, 14)
         x = self.adapter(x)
+
+        x = x + self.conv(out) # (B, dim, 14, 14)
+        
         return x
     
     def _initialize_weights(self):
@@ -426,8 +427,9 @@ class LTB(nn.Module):
         else:
             out = x
         
-        x = x + self.conv(out)
+        
         x = self.adapter(x)
+        x = x + self.conv(out)
         #x = x + self.mlp_path_dropout(self.mlp(out))
         return x
     
