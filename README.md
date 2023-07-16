@@ -1,6 +1,6 @@
 # Enhancing MedViT: Incorporating Adapter Modules for Improved Medical Image Datasets.
 
-## Description:
+### Description:
 
 This project aims to improve the performance of the MedViT model, a robust Vision Transformer (ViT) optimized for small medical datasets, by incorporating Adapter Modules. Unlike the typical application of ViT which requires large datasets, our implementation focuses on maximizing performance with smaller, more specific datasets that are typical in medical applications.
 
@@ -10,7 +10,7 @@ This project involves modifying the original MedViT model architecture to includ
 
 Through this project, we aim to demonstrate the effectiveness of adapter modules in improving the performance of Vision Transformers, even when dealing with smaller datasets. This approach will provide significant benefits in the field of medical image analysis, enabling more accurate and reliable diagnoses and predictions.
 
-## Dataset:
+### MedNIST Dataset:
 The MedNIST dataset is a collection of medical images spanning six categories. These categories include Hand, Abdomen, Chest, HeadCT, BreastMRI, and CXR (Chest X-ray). It is a balanced dataset, with an equal number of images in each category, which makes it a suitable choice for classification tasks.
 
 The MedNIST dataset was compiled from several larger, publicly available datasets, including the RSNA Pneumonia Detection Challenge dataset and the NIH Chest X-ray dataset, among others.
