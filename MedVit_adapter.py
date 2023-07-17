@@ -4,14 +4,15 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmdet.models.builder import BACKBONES
-from ops.modules import MSDeformAttn
-from timm.models.layers import DropPath, trunc_normal_
-from torch.nn.init import normal_
+# from mmdet.models.builder import BACKBONES
+# from ops.modules import MSDeformAttn
+# from timm.models.layers import DropPath, trunc_normal_
+# from torch.nn.init import normal_
 
-from .base.vit import TIMMVisionTransformer
+# from .base.vit import TIMMVisionTransformer
+
 from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
-
+from MedVit import LTB, ECB, ConvBNReLU
 
 class MedViTAdapter(nn.Module):
     def __init__(self, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4, deform_num_heads=6,
