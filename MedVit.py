@@ -543,6 +543,7 @@ class MedViT(nn.Module):
 
 class MedVit_adapter(nn.Module):
     
+    
 @register_model
 def MedViT_small(pretrained=False, pretrained_cfg=None, **kwargs):
     model = MedViT(stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
