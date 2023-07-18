@@ -28,3 +28,16 @@ Balance of Classes: The dataset is balanced, meaning it contains an equal number
 Preprocessing: The images have been preprocessed to a standard size and grayscale format for easier use.
 
 The MedNIST dataset is commonly used in medical image classification tasks as it covers a range of imaging types found in the medical field. It is also an easily accessible dataset that is helpful for training and validating machine learning models, especially for those new to medical image analysis. However, it should be noted that real-world medical datasets are often much more complex and unbalanced.
+
+
+# update on the work??????
+
+1.MedVit_adapter model: I assumed that all the necessary modules (like ECB, LTB, SpatialPriorModule, InteractionBlock, and MSDeformAttn) and helper functions (like deform_inputs, trunc_normal_, normal_) are implemented and imported correctly, as they are not standard PyTorch modules or functions. If not, you need to ensure their correct implementation and importation.
+
+2.Pretrained weights: You have included pretrained as an argument in your model registry functions but have not used it inside the function. Typically, this flag is used to load pretrained weights into your model. If you plan to use pretrained weights, you will need to implement the logic to load these weights when pretrained=True.
+
+3.Hyperparameters: There are quite a few hyperparameters in your model. Make sure the values you are providing are sensible for your task, and that all hyperparameters are being passed to the model where needed.
+
+4.Training and Evaluation: This code only covers the model architecture. To train the model, you will need to create a training loop where the model weights are updated, and an evaluation loop where the model's performance is assessed. You'll also need a loss function, an optimizer, and potentially a learning rate scheduler.
+
+5.Dataset: Ensure that you have the correct data loading and preprocessing mechanisms in place. The data should be in the correct format to be fed into your model.
