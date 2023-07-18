@@ -14,6 +14,7 @@ from timm.models.registry import register_model
 from ops.modules import MSDeformAttn
 from torch import nn
 from utils import merge_pre_bn
+from torch.nn.init import normal_
 
 NORM_EPS = 1e-5
 
@@ -543,7 +544,7 @@ from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 
 
 
-class MedVit_adapter(nn.Module):
+class MedVit_adapter(nn.Module): 
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=False, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
@@ -552,6 +553,12 @@ class MedVit_adapter(nn.Module):
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
         super(MedVit_adapter, self).__init__(num_heads=num_heads , pretrained=pretrained)
         self.use_checkpoint = use_checkpoint
+        embed_dim = self.embed_dim
+        self.level_embed = nn.Parameter(torch.zeros(3, embed_dim))
+        self.spm = SpatialPriorModule(inplanes=conv_inplane, embed_dim=embed_dim, with_cp=False)
+        
+
+
 
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
@@ -608,6 +615,18 @@ class MedVit_adapter(nn.Module):
         self.stage_out_idx = [sum(depths[:idx + 1]) - 1 for idx in range(len(depths))]
         print('initialize_weights...')
         self._initialize_weights()
+
+        self.up = nn.ConvTranspose2d(embed_dim, embed_dim, 2, 2)
+        self.norm1 = nn.SyncBatchNorm(embed_dim)
+        self.norm2 = nn.SyncBatchNorm(embed_dim)
+        self.norm3 = nn.SyncBatchNorm(embed_dim)
+        self.norm4 = nn.SyncBatchNorm(embed_dim)
+
+        self.up.apply(self._init_weights)
+        self.spm.apply(self._init_weights)
+        self.interactions.apply(self._init_weights)
+        self.apply(self._init_deform_weights)
+        normal_(self.level_embed)
 
     def merge_bn(self):
         self.eval()
