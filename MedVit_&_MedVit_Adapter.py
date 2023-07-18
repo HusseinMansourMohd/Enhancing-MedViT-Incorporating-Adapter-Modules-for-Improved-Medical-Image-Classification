@@ -1,8 +1,5 @@
 """
-Author: Omid Nejati
-Email: omid_nejaty@alumni.iust.ac.ir
-
-MedViT: A Robust Vision Transformer for Generalized Medical Image Classification.
+Author: Hussein Mansour
 """
 from functools import partial
 import math
