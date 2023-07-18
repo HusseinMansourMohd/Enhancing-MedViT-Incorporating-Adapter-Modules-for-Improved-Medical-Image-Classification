@@ -551,12 +551,24 @@ class MedVit_adapter(nn.Module):
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
                  cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, pretrained=None,
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
+        
         super(MedVit_adapter, self).__init__(num_heads=num_heads , pretrained=pretrained)
+        
         self.use_checkpoint = use_checkpoint
         embed_dim = self.embed_dim
+        self.num_block = len(self.blocks)
         self.level_embed = nn.Parameter(torch.zeros(3, embed_dim))
         self.spm = SpatialPriorModule(inplanes=conv_inplane, embed_dim=embed_dim, with_cp=False)
-        
+        self.interactions = nn.Sequential(*[
+            InteractionBlock(dim=embed_dim, num_heads=deform_num_heads, n_points=n_points,
+                             init_values=init_values, drop_path=self.drop_path_rate,
+                             norm_layer=self.norm_layer, with_cffn=with_cffn,
+                             cffn_ratio=cffn_ratio, deform_ratio=deform_ratio,
+                             extra_extractor=((True if i == len(interaction_indexes) - 1
+                                               else False) and use_extra_extractor),
+                             with_cp=with_cp)
+                             for i in range(len(interaction_indexes))
+        ])
 
 
 
@@ -719,23 +731,13 @@ class MedVit_adapter(nn.Module):
             c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
 
         # Final Norm
-        f1 = self.norm(c1)
-        f2 = self.norm(c2)
-        f3 = self.norm(c3)
-        f4 = self.norm(c4)
+        f1 = self.norm1(c1)
+        f2 = self.norm2(c2)
+        f3 = self.norm3(c3)
+        f4 = self.norm4(c4)
 
         return [f1, f2, f3, f4]
-        # x = self.stem(x)
-        # for idx, layer in enumerate(self.features):
-        #     if self.use_checkpoint:
-        #         x = checkpoint.checkpoint(layer, x)
-        #     else:
-        #         x = layer(x)
-        # x = self.norm(x)
-        # x = self.avgpool(x)
-        # x = torch.flatten(x, 1)
-        # x = self.proj_head(x)
-        # return x
+       
 
     
 @register_model
