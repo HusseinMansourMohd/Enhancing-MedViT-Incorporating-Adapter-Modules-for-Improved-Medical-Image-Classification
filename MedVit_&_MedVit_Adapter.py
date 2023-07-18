@@ -8,7 +8,7 @@ import torch.utils.checkpoint as checkpoint
 from einops import rearrange
 from timm.models.layers import DropPath, trunc_normal_
 from timm.models.registry import register_model
-from ops.modules import MSDeformAttn
+from function import MSDeformAttn
 from torch import nn
 from utils import merge_pre_bn
 from torch.nn.init import normal_
