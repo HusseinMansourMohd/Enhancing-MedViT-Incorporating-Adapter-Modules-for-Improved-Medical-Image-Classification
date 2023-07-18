@@ -553,10 +553,12 @@ class MedVit_adapter(nn.Module):
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
         
         super(MedVit_adapter, self).__init__(num_heads=num_heads , pretrained=pretrained)
-        
+
         self.use_checkpoint = use_checkpoint
         embed_dim = self.embed_dim
         self.num_block = len(self.blocks)
+        self.pretrain_size = (pretrain_size, pretrain_size)
+        self.interaction_indexes = interaction_indexes
         self.level_embed = nn.Parameter(torch.zeros(3, embed_dim))
         self.spm = SpatialPriorModule(inplanes=conv_inplane, embed_dim=embed_dim, with_cp=False)
         self.interactions = nn.Sequential(*[
