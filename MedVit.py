@@ -714,7 +714,8 @@ class MedVit_adapter(nn.Module):
             indexes = self.interaction_indexes[i]
             x,c = layer(x, c, self.blocks[indexes[0]:indexes[-1] + 1],
                         deform_inputs1, deform_inputs2, H, W)
-            outs.append(x.transpose(1,2).veiw(bs, dim, H, W).contiguous)
+            outs.append(x.transpose(1,2).veiw(bs, dim, H, W).contiguous())
+
 
         # Split & Reshape
         c2 = c[:, 0:c2.size(1),:]
