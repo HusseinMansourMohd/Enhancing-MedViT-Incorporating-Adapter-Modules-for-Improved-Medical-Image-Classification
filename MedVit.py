@@ -737,8 +737,16 @@ class MedVit_adapter(nn.Module):
         f2 = self.norm2(c2)
         f3 = self.norm3(c3)
         f4 = self.norm4(c4)
+        
+        x = torch.cat([f1, f2, f3, f4], dim=1)
 
-        return [f1, f2, f3, f4]
+        x = self.avgpool(x)
+
+        x = torch.flatten(x, 1)
+
+        x = self.proj_head(x) 
+
+        return x
        
 
     
