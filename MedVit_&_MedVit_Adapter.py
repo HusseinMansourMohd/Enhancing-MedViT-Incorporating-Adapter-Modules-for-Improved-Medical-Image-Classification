@@ -256,7 +256,7 @@ class ECB(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.adapter = Adapter(out_channels)
+        
 
         norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
         assert out_channels % head_dim == 0
@@ -290,17 +290,12 @@ class ECB(nn.Module):
         #x = x + self.mlp_path_dropout(self.mlp(out))
         x = x + self.conv(out) # (B, dim, 14, 14)
 
-        x = self.adapter(x)
-
         
         return x
     
     def _initialize_weights(self):
         super()._initialize_weights()
 
-        # Initialize adapter weights
-        nn.init.normal_(self.adapter.down_project.weight, std=0.001)
-        nn.init.normal_(self.adapter.up_project.weight, std=0.001)
 
 
 class E_MHSA(nn.Module):
@@ -401,7 +396,7 @@ class LTB(nn.Module):
 
         #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio, drop=drop)
         #self.mlp_path_dropout = DropPath(path_dropout)
-        self.adapter = Adapter(out_channels)
+        #self.adapter = Adapter(out_channels)
         self.is_bn_merged = False
 
     def merge_bn(self):
@@ -431,7 +426,7 @@ class LTB(nn.Module):
             out = x
         
         x = x + self.conv(out)
-        x = self.adapter(x)
+        #x = self.adapter(x)
         
         #x = x + self.mlp_path_dropout(self.mlp(out))
         return x
@@ -440,8 +435,8 @@ class LTB(nn.Module):
         super()._initialize_weights()
 
         # Initialize adapter weights
-        nn.init.normal_(self.adapter.down_project.weight, std=0.001)
-        nn.init.normal_(self.adapter.up_project.weight, std=0.001)
+        #nn.init.normal_(self.adapter.down_project.weight, std=0.001)
+        #nn.init.normal_(self.adapter.up_project.weight, std=0.001)
 
 
 class MedViT(nn.Module):
@@ -540,7 +535,6 @@ class MedViT(nn.Module):
         x = self.proj_head(x)
         return x
 
-from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 
 
 
