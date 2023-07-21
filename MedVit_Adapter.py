@@ -88,6 +88,7 @@ class MedVit_adapter(nn.Module):
     def _create_features(self,stem_chs, depths, strides, sr_ratios, head_dim, 
                          mix_block_ratio, attn_drop, drop, path_dropout):
         input_channel = stem_chs[-1]
+        idx = 0
         features = []
         dpr = [x.item() for x in torch.linspace(0, path_dropout, sum(depths))]  # stochastic depth decay rule
         for stage_id in range(len(depths)):
