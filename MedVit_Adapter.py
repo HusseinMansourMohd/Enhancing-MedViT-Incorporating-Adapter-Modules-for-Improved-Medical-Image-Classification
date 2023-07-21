@@ -1,4 +1,6 @@
 from torch import nn
+from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
+
 
 class MedVit_adapter(nn.Module): 
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
