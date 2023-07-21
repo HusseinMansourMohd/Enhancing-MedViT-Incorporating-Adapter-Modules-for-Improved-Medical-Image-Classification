@@ -1,7 +1,9 @@
 from torch import nn
 from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
-from MedVit import ConvBNReLU,ECB,LTB,
+from MedVit import ConvBNReLU,ECB,LTB
+from ops.modules import MSDeformAttn
+
 
 NORM_EPS= 1e-5
 
