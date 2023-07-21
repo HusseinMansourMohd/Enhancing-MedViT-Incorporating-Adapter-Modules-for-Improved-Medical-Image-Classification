@@ -1,6 +1,9 @@
 from torch import nn
 from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
+import torch
+from MedVit import ConvBNReLU,ECB,LTB,
 
+NORM_EPS= 1e-5
 
 class MedVit_adapter(nn.Module): 
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
@@ -50,7 +53,7 @@ class MedVit_adapter(nn.Module):
                              init_values=init_values, drop_path=self.drop_path_rate,
                              norm_layer=self.norm_layer, with_cffn=with_cffn,
                              cffn_ratio=cffn_ratio, deform_ratio=deform_ratio,
-                             extra_extractor=((True if i == len(interaction_indexes) - 1
+                             extra_extractor=((True if i == len(self.interaction_indexes) - 1
                                                else False) and self.use_extra_extractor),
                              with_cp=self.with_cp)
                              for i in range(len(self.interaction_indexes))
@@ -70,7 +73,7 @@ class MedVit_adapter(nn.Module):
             ConvBNReLU(stem_chs[2], stem_chs[2], kernel_size=3, stride=2),
         )
 
-    def _create_features(self, depths, strides, sr_ratios, head_dim, 
+    def _create_features(self,stem_chs, depths, strides, sr_ratios, head_dim, 
                          mix_block_ratio, attn_drop, drop, path_dropout):
         input_channel = stem_chs[-1]
         features = []
@@ -117,10 +120,10 @@ class MedVit_adapter(nn.Module):
         self.norm4 = nn.SyncBatchNorm(embed_dim)
 
         def merge_bn(self):
-        self.eval()
-        for idx, module in self.named_modules():
-            if isinstance(module, ECB) or isinstance(module, LTB):
-                module.merge_bn()
+            self.eval()
+            for idx, module in self.named_modules():
+                if isinstance(module, ECB) or isinstance(module, LTB):
+                    module.merge_bn()
 
     @staticmethod
     def _init_weights(m):
