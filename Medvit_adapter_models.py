@@ -6,7 +6,7 @@ print(torchvision.__version__)
 print(torchtext.__version__)
 from models.ops import MultiScaleDeformableAttention
 import MedVit_Adapter
-from MedVit_adapter import MedViT_adapter_small as small
+from MedVit_Adapter import MedViT_adapter_small as small
 
 import medmnist
 from medmnist import INFO 
