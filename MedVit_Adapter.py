@@ -2,6 +2,7 @@ from torch import nn
 from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
 from MedVit import ConvBNReLU,ECB,LTB
+from timm.models.registry import register_model
 from ops.modules import MSDeformAttn
 import torch.nn.functional as F
 
@@ -215,3 +216,19 @@ class MedVit_adapter(nn.Module):
         x = self.proj_head(x) 
 
         return x
+
+
+@register_model
+def MedViT_adapter_small(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedVit_adapter(stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
+    return model
+
+@register_model
+def MedViT_adapter_base(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedVit_adapter(stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, **kwargs)
+    return model
+
+@register_model
+def MedViT_adapter_large(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedVit_adapter(stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, **kwargs)
+    return model
