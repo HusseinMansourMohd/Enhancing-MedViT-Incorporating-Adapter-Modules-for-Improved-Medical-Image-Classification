@@ -1,3 +1,10 @@
+"""
+Author: Hussein Mansour Mohamed Mansour
+Email: hussein.mansour@tamu.edu
+
+Enhancing MedViT: Incorporating Adapter Modules for Improved Medical Image Datasets.
+"""
+
 from torch import nn
 from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
