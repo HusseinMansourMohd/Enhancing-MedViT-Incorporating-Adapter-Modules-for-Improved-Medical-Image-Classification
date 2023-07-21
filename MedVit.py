@@ -549,7 +549,7 @@ class MedVit_adapter(nn.Module):
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=False, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
-                 cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, pretrained=None,
+                 cffn_ratio=0.25, deform_ratio=1.0, pretrained=None,
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
         
         super(MedVit_adapter, self).__init__(num_heads=num_heads , pretrained=pretrained)
@@ -579,7 +579,7 @@ class MedVit_adapter(nn.Module):
                                    [384, 384, 384, 384, 512] * (depths[2] // 5),
                                    [768] * (depths[3] - 1) + [1024]]
 
-        # Next Hybrid Strategy
+        #  Hybrid Strategy
         self.stage_block_types = [[ECB] * depths[0],
                                   [ECB] * (depths[1] - 1) + [LTB],
                                   [ECB, ECB, ECB, ECB, LTB] * (depths[2] // 5),
