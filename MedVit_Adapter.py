@@ -1,14 +1,16 @@
-
+from torch import nn
 
 class MedVit_adapter(nn.Module): 
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=False, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
-                 cffn_ratio=0.25, deform_ratio=1.0, pretrained=None,
+                 cffn_ratio=0.25, deform_ratio=1.0, pretrained=None, output_channel=512,
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
 
-        super(MedVit_adapter, self).__init__(num_heads=num_heads , pretrained=pretrained)
+        super(MedVit_adapter, self).__init__(num_heads=num_heads  , pretrained=pretrained)
+
+        embed_dim = self.embed_dim
         
         self._initialize_hyperparameters(path_dropout, use_checkpoint, pretrain_size, interaction_indexes, 
                                          num_heads, pretrained, use_extra_extractor, with_cp)
