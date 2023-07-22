@@ -10,6 +10,7 @@ import torch.utils.checkpoint as cp
 _logger = logging.getLogger(__name__)
 
 
+
 def get_reference_points(spatial_shapes, device):
     reference_points_list = []
     for lvl, (H_, W_) in enumerate(spatial_shapes):
