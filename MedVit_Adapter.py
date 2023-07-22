@@ -10,7 +10,6 @@ from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
 from MedVit import ConvBNReLU,ECB,LTB
 from timm.models.registry import register_model
-from ops.modules import MSDeformAttn
 import torch.nn.functional as F
 
 
