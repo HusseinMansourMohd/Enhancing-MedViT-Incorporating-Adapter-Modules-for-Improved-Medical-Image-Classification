@@ -6,7 +6,7 @@ Enhancing MedViT: Incorporating Adapter Modules for Improved Medical Image Datas
 """
 
 from torch import nn
-from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
+from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
 from MedVit import ConvBNReLU,ECB,LTB
 from timm.models.registry import register_model
