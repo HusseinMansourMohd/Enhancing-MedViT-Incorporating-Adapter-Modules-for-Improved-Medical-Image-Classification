@@ -540,7 +540,7 @@ class MedViT(nn.Module):
         x = self.proj_head(x)
         return x
 
-from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
+# from .adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 
 
 
