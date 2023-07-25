@@ -5,3 +5,4 @@ torchsummary
 matplotlib
 timm
 einops=0.6.1
+scipy
