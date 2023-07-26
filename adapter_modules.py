@@ -4,10 +4,29 @@ from functools import partial
 import torch
 import torch.nn as nn
 from models.ops import ms_deform_attn 
+#from Transforms.DeformableDretTransforms import ms_deform_attn
+from transformers import DeformableDetrConfig, DeformableDetrModel
 from timm.models.layers import DropPath
 import torch.utils.checkpoint as cp
 
 _logger = logging.getLogger(__name__)
+
+
+config = DeformableDetrConfig(
+    use_timm_backbone=True,
+    backbone_config=None,
+    num_channels=3,
+    num_queries=300,
+    d_model=256,
+    encoder_layers=6,
+    decoder_layers=6,
+    encoder_attention_heads=8,
+    decoder_attention_heads=8,
+    #dropout=0.1,
+   
+)
+
+ms_deform_attn = DeformableDetrModel(config)
 
 
 
