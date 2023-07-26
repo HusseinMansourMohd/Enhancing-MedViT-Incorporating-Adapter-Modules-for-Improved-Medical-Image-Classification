@@ -3,7 +3,7 @@ from functools import partial
 
 import torch
 import torch.nn as nn
-from models.ops import ms_deform_attn 
+#from models.ops import ms_deform_attn 
 from transformers import DeformableDetrConfig, DeformableDetrModel
 from timm.models.layers import DropPath
 import torch.utils.checkpoint as cp
