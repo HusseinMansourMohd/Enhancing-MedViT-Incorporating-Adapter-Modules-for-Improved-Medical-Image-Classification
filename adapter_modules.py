@@ -4,7 +4,6 @@ from functools import partial
 import torch
 import torch.nn as nn
 from models.ops import ms_deform_attn 
-#from Transforms.DeformableDretTransforms import ms_deform_attn
 from transformers import DeformableDetrConfig, DeformableDetrModel
 from timm.models.layers import DropPath
 import torch.utils.checkpoint as cp
@@ -12,21 +11,7 @@ import torch.utils.checkpoint as cp
 _logger = logging.getLogger(__name__)
 
 
-config = DeformableDetrConfig(
-    use_timm_backbone=True,
-    backbone_config=None,
-    num_channels=3,
-    num_queries=300,
-    d_model=256,
-    encoder_layers=6,
-    decoder_layers=6,
-    encoder_attention_heads=8,
-    decoder_attention_heads=8,
-    #dropout=0.1,
-   
-)
 
-ms_deform_attn = DeformableDetrModel(config)
 
 
 
@@ -153,6 +138,19 @@ class Injector(nn.Module):
         self.feat_norm = norm_layer(dim)
         self.attn = ms_deform_attn(d_model=dim, n_levels=n_levels, n_heads=num_heads,
                                  n_points=n_points, ratio=deform_ratio)
+        config = DeformableDetrConfig(
+            use_timm_backbone=True,
+            backbone_config=None,
+            num_channels=3,
+            num_queries=300,
+            d_model=dim,
+            encoder_layers=n_levels,
+            decoder_layers=n_levels,
+            encoder_attention_heads=num_heads,
+            decoder_attention_heads=num_heads,
+        )
+
+        self.attn = DeformableDetrModel(config)
         self.gamma = nn.Parameter(init_values * torch.ones((dim)), requires_grad=True)
     
     def forward(self, query, reference_points, feat, spatial_shapes, level_start_index):
