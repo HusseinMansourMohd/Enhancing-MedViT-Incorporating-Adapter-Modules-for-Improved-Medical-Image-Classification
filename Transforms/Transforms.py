@@ -16,4 +16,4 @@ config = DeformableDetrConfig(
 )
 
 # Create a model using the configuration
-model = DeformableDetrModel(config)
+ms_deform_attn = DeformableDetrModel(config)
