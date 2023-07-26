@@ -11,7 +11,7 @@ config = DeformableDetrConfig(
     decoder_layers=6,
     encoder_attention_heads=8,
     decoder_attention_heads=8,
-    dropout=0.1,
+    #dropout=0.1,
    
 )
 
