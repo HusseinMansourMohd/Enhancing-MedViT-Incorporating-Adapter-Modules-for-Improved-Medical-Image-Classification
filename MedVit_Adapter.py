@@ -7,8 +7,33 @@ import torch.nn.functional as F
 
 NORM_EPS= 1e-5
 
+class PatchEmbed(nn.Module):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 stride=1):
+        super(PatchEmbed, self).__init__()
+        norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
+        if stride == 2:
+            self.avgpool = nn.AvgPool2d((2, 2), stride=2, ceil_mode=True, count_include_pad=False)
+            self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False)
+            self.norm = norm_layer(out_channels)
+        elif in_channels != out_channels:
+            self.avgpool = nn.Identity()
+            self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False)
+            self.norm = norm_layer(out_channels)
+        else:
+            self.avgpool = nn.Identity()
+            self.conv = nn.Identity()
+            self.norm = nn.Identity()
 
+    def forward(self, x):
+        x = self.avgpool(x)
+        H, W = x.size(2), x.size(3)
+        x = self.norm(self.conv(x))
+        return x, H, W
 
+        
 class MedVit_adapter(nn.Module): 
     def __init__(self, embed_dim, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
