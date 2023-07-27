@@ -1,3 +1,4 @@
+from functools import partial
 from torch import nn
 from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
@@ -33,7 +34,7 @@ class PatchEmbed(nn.Module):
         x = self.norm(self.conv(x))
         return x, H, W
 
-        
+
 class MedVit_adapter(nn.Module): 
     def __init__(self, embed_dim, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
