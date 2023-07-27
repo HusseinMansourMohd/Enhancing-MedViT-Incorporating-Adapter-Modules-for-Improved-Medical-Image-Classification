@@ -32,7 +32,7 @@ class PatchEmbed(nn.Module):
         x = self.avgpool(x)
         H, W = x.size(2), x.size(3)
         x = self.norm(self.conv(x))
-        return x, H, W
+        return x
 
 
 class MedVit_adapter(nn.Module): 
