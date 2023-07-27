@@ -8,7 +8,7 @@ import torch.nn.functional as F
 NORM_EPS= 1e-5
 
 class MedVit_adapter(nn.Module): 
-    def __init__(self, embed_dim,in_channels, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
+    def __init__(self, embed_dim, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=False, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
@@ -19,8 +19,8 @@ class MedVit_adapter(nn.Module):
 
         self.embed_dim = embed_dim
         self.stem_chs = stem_chs
-        self.in_channels = in_channels
-        self.patch_embed = PatchEmbed(in_channels, out_channels, stride)
+        self.input_channel = stem_chs[-1]
+        self.patch_embed = PatchEmbed(input_channel, out_channels, stride)
 
         self._initialize_hyperparameters(path_dropout, use_checkpoint, pretrain_size, interaction_indexes, 
                                          num_heads, pretrained, use_extra_extractor, with_cp)
