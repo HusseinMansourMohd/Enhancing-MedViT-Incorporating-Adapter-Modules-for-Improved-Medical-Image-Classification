@@ -32,7 +32,7 @@ class PatchEmbed(nn.Module):
         x = self.avgpool(x)
         H, W = x.size(2), x.size(3)
         x = self.norm(self.conv(x))
-        return x
+        return x, H, W
 
 
 class MedVit_adapter(nn.Module): 
@@ -174,7 +174,7 @@ class MedVit_adapter(nn.Module):
 
         # Embedding and Position embedding
         x, H, W = self.patch_embed(x)
-
+        print(x.shape)
         bs, n, dim = x.shape
         pos_embed = self._get_pos_embed(self.pos_embed[:, 1:], H, W)
         x = self.pos_drop(x + pos_embed)
