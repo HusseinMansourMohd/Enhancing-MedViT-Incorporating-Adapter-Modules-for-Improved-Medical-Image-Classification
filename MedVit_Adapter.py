@@ -124,6 +124,12 @@ class MedVit_adapter(nn.Module):
         self.proj_head = nn.Sequential(
             nn.Linear(output_channel, num_classes),
         )
+    
+    def _add_level_embed(self, c2, c3, c4):
+        c2 = c2 + self.level_embed[0]
+        c3 = c3 + self.level_embed[1]
+        c4 = c4 + self.level_embed[2]
+        return c2, c3, c4
 
     def forward(self, x):
         deform_inputs1 , deform_inputs2 = deform_inputs(x)
