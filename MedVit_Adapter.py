@@ -19,6 +19,8 @@ class MedVit_adapter(nn.Module):
 
         self.embed_dim = embed_dim
         self.stem_chs = stem_chs
+        self.patch_embed = PatchEmbed(in_channels, out_channels, stride)
+
         self._initialize_hyperparameters(path_dropout, use_checkpoint, pretrain_size, interaction_indexes, 
                                          num_heads, pretrained, use_extra_extractor, with_cp)
 
