@@ -1,11 +1,34 @@
 from torch import nn
 from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
-from MedVit import ConvBNReLU,ECB,LTB,PatchEmbed
+from MedVit import ConvBNReLU,ECB,LTB
 from timm.models.registry import register_model
 import torch.nn.functional as F
 
 NORM_EPS= 1e-5
+
+class PatchEmbed(nn.Module):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 stride=1):
+        super(PatchEmbed, self).__init__()
+        norm_layer = partial(nn.BatchNorm2d, eps=NORM_EPS)
+        if stride == 2:
+            self.avgpool = nn.AvgPool2d((2, 2), stride=2, ceil_mode=True, count_include_pad=False)
+            self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False)
+            self.norm = norm_layer(out_channels)
+        elif in_channels != out_channels:
+            self.avgpool = nn.Identity()
+            self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False)
+            self.norm = norm_layer(out_channels)
+        else:
+            self.avgpool = nn.Identity()
+            self.conv = nn.Identity()
+            self.norm = nn.Identity()
+
+    def forward(self, x):
+        return self.norm(self.conv(self.avgpool(x)))
 
 class MedVit_adapter(nn.Module): 
     def __init__(self, embed_dim, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
@@ -21,7 +44,7 @@ class MedVit_adapter(nn.Module):
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
         
-        self.patch_embed = PatchEmbed(input_channel, output_channel = 512)
+        self.patch_embed = PatchEmbed(in_channels=input_channel, output_channels = 512)
 
         self._initialize_hyperparameters(path_dropout, use_checkpoint, pretrain_size, interaction_indexes, 
                                          num_heads, pretrained, use_extra_extractor, with_cp)
