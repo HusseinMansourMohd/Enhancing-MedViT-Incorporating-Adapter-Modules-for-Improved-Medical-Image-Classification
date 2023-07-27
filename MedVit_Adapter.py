@@ -1,7 +1,7 @@
 from torch import nn
 from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
-from MedVit import ConvBNReLU,ECB,LTB,PatchEmbed,
+from MedVit import ConvBNReLU,ECB,LTB,PatchEmbed
 from timm.models.registry import register_model
 import torch.nn.functional as F
 
