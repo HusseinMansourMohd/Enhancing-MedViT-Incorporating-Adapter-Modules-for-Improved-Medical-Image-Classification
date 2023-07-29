@@ -45,7 +45,7 @@ class MedVit_adapter(nn.Module):
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
 
         super(MedVit_adapter, self).__init__()
-
+        self.pos_embed = None 
         self.embed_dim = embed_dim
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
