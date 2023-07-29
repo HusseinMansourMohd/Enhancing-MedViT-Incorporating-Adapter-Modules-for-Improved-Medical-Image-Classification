@@ -162,6 +162,13 @@ class MedVit_adapter(nn.Module):
         c3 = c3 + self.level_embed[1]
         c4 = c4 + self.level_embed[2]
         return c2, c3, c4
+    
+    def _get_pos_embed(self, pos_embed, H, W):
+        pos_embed = pos_embed.reshape(
+            1, self.pretrain_size[0] // 16, self.pretrain_size[1] // 16, -1).permute(0, 3, 1, 2)
+        pos_embed = F.interpolate(pos_embed, size=(H, W), mode='bicubic', align_corners=False).\
+            reshape(1, -1, H * W).permute(0, 2, 1)
+        return pos_embed
 
     def forward(self, x):
         deform_inputs1 , deform_inputs2 = deform_inputs(x)
