@@ -175,7 +175,7 @@ class MedVit_adapter(nn.Module):
         # Embedding and Position embedding
         x, H, W = self.patch_embed(x)
         print(x.shape)
-        bs, n, dim = x.shape
+        bs, dim = x.shape
         pos_embed = self._get_pos_embed(self.pos_embed[:, 1:], H, W)
         x = self.pos_drop(x + pos_embed)
 
