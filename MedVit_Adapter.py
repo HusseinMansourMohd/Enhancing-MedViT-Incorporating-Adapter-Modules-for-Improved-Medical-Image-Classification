@@ -187,7 +187,7 @@ class MedVit_adapter(nn.Module):
         if(pos_embed):
             pos_embed = self._get_pos_embed(self.pos_embed[:, 1:] , H, W)
         else:
-            pos_embed = 0
+            pos_embed = []
             pos_embed = self._get_pos_embed(pos_embed, H, W)
         x = self.pos_drop(x + pos_embed)
 
