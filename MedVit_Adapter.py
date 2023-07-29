@@ -183,7 +183,12 @@ class MedVit_adapter(nn.Module):
         x, H, W = self.patch_embed(x)
         dim = x.shape
         bs = x.shape
-        pos_embed = self._get_pos_embed(self.pos_embed[:, 1:], H, W)
+       
+        if(pos_embed):
+            pos_embed = self._get_pos_embed(self.pos_embed[:, 1:] , H, W)
+        else:
+            pos_embed = 0
+            pos_embed = self._get_pos_embed(pos_embed, H, W)
         x = self.pos_drop(x + pos_embed)
 
         # Interactions
