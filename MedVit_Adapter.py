@@ -184,7 +184,7 @@ class MedVit_adapter(nn.Module):
         x, H, W = self.patch_embed(x)
         dim = x.shape
         bs = x.shape
-        if pos_embed is not None:
+        if self.pos_embed is not None:
             pos_embed = self._get_pos_embed(self.pos_embed[:, 1:] , H, W)
         else:
             pos_embed = np.identity(4)
