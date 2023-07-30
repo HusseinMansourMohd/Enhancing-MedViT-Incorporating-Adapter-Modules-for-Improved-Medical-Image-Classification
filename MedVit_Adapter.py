@@ -192,7 +192,7 @@ class MedVit_adapter(nn.Module):
         
        
        
-        x = self.pos_drop(x + pos_embed)
+        x = x + pos_embed
 
         # Interactions
         outs = []
