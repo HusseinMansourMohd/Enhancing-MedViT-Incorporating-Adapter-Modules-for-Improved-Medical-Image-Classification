@@ -49,7 +49,6 @@ class MedVit_adapter(nn.Module):
         self.embed_dim = embed_dim
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
-        self.pos_drop = nn.Dropout(0.5)
         
         self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
 
@@ -63,6 +62,28 @@ class MedVit_adapter(nn.Module):
                                            mix_block_ratio, attn_drop, drop, path_dropout)
         self.norm = nn.BatchNorm2d(output_channel, eps=NORM_EPS)
         self._initialize_final_layers(output_channel, num_classes)
+
+    def drop_path(self, x):
+        """
+        Convert tensor x to CPU before converting it to numpy array and then back to original device.
+        """
+
+        # Save original device of the tensor
+        original_device = x.device
+
+        # Convert tensor to CPU
+        x_cpu = x.cpu()
+
+        # Convert tensor to numpy array
+        x_numpy = x_cpu.numpy()
+
+        # Convert numpy array back to tensor
+        x_tensor = torch.from_numpy(x_numpy)
+
+        # Move tensor back to original device
+        x_tensor_device = x_tensor.to(original_device)
+
+        return x_tensor_device
 
     def _initialize_hyperparameters(self, path_dropout, use_checkpoint, pretrain_size, 
                                     interaction_indexes, num_heads, pretrained, use_extra_extractor, with_cp):
@@ -193,7 +214,7 @@ class MedVit_adapter(nn.Module):
         
        
        
-        x = x + pos_embed
+        x = self.drop_path(x + pos_embed)c
 
         # Interactions
         outs = []
