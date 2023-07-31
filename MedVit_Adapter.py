@@ -190,6 +190,7 @@ class MedVit_adapter(nn.Module):
             pos_embed = self._get_pos_embed(self.pos_embed[:, 1:] , H, W)
         else:
             pos_embed = np.identity(4)
+        pos_embed = torch.from_numpy(pos_embed).cuda()
         print(x)
         print(pos_embed)
         x = x + pos_embed
