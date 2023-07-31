@@ -191,10 +191,11 @@ class MedVit_adapter(nn.Module):
         else:
             pos_embed = np.identity(56)
         pos_embed = torch.from_numpy(pos_embed).cuda()
+        
+        pos_embed = pos_embed.unsqueeze(-1).unsqueeze(-1)
+        pos_embed = pos_embed.expand(x.shape[0], x.shape[1], 56, 56)
         print(x.shape)
         print(pos_embed.shape)
-        pos_embed = pos_embed.unsqueeze(-1).unsqueeze(-1)
-        pos_embed = pos_embed.expand(-1, -1, 56, 56)
         x = x + pos_embed
        
         
