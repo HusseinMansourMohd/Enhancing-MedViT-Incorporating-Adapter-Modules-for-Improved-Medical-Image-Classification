@@ -213,9 +213,10 @@ class MedVit_adapter(nn.Module):
 
         
        
-       
-        x = torch.tensor(self.drop_path(np.array(x + pos_embed))).to(x.device)
-        x.to_
+        
+
+        
+        
         # Interactions
         outs = []
         for i, interaction in enumerate(self.interactions):
