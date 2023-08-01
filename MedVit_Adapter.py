@@ -184,8 +184,8 @@ class MedVit_adapter(nn.Module):
 
         # Embedding and Position embedding
         x, H, W = self.patch_embed(x)
-        dim = x.shape
-        bs = x.shape
+        dim = x.shape[0]*x.shape[1]*x.shape[2]*x.shape[3]//(H*W*8)
+        bs = x.shape[0]*x.shape[1]*x.shape[2]*x.shape[3]//(H*W*8)
         if self.pos_embed is not None:
             pos_embed = self._get_pos_embed(self.pos_embed[:, 1:] , H, W)
         else:
@@ -214,8 +214,8 @@ class MedVit_adapter(nn.Module):
         c3 = c[:, c2.size(1):c2.size(1) + c3.size(1), :]
         c4 = c[:, c2.size(1) + c3.size(1), :]
         c2 = c2.transpose(1,2).view(bs, dim, H * 2, W *2).contiguous()
-        c3 = c3.transpose(1,2).view(bs, dim, H, W).contiguous()
-        c4 = c4.transpose(1,2).view(bs, dim, H//2, W//2).contiguous()
+        c3 = c3.transpose(1,2).view(bs*2, dim*2, H, W).contiguous()
+        c4 = c4.transpose(1,2).view(bs*2, dim*2, H//2, W//2).contiguous()
 
         # Feature interpolation and addition
         if self.add_vit_feature:
