@@ -52,7 +52,7 @@ class MedVit_adapter(nn.Module):
         self.norm1 = nn.BatchNorm2d(64)
         self.norm2 = nn.BatchNorm2d(4)
         self.norm3 = nn.BatchNorm2d(4)
-        self.norm4 = nn.BatchNorm2d(4)
+        self.norm4 = nn.BatchNorm2d(1)
         
         self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
 
@@ -221,6 +221,8 @@ class MedVit_adapter(nn.Module):
         c3 = c3.transpose(1,2).reshape(bs, dim, H, W).contiguous()
         if len(c4.shape) < 3:
                 c4 = c4.unsqueeze(2)
+        print("c2.shape:",c2.shape)
+        print("c3.shape",c3.shape)
         print("c4.shape:",c4.shape)
         c4 = c4.transpose(1,2)
         c4 = c4.reshape(bs, c4.shape[1], c4.shape[1], c4.shape[2]).contiguous()
