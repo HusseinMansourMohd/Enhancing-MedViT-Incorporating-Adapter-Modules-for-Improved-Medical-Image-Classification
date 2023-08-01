@@ -5,6 +5,7 @@ from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
 from MedVit import ConvBNReLU,ECB,LTB,PatchEmbed
 from timm.models.registry import register_model
+import torch.utils.checkpoint as checkpoint
 import torch.nn.functional as F
 
 NORM_EPS= 1e-5
@@ -205,7 +206,10 @@ class MedVit_adapter(nn.Module):
         outs = []
         for i, interaction in enumerate(self.interactions):
             indexes = self.interaction_indexes[i]
-            x, c = interaction(x, c, self.blocks[indexes[0]:indexes[-1] + 1], deform_inputs1, deform_inputs2, H, W)
+            if self.use_checkpoint:
+                x, c = checkpoint.checkpoint(interaction, x, c, self.blocks[indexes[0]:indexes[-1] + 1], deform_inputs1, deform_inputs2, H, W)
+            else:
+                x, c = interaction(x, c, self.blocks[indexes[0]:indexes[-1] + 1], deform_inputs1, deform_inputs2, H, W)
             outs.append(x.transpose(1,2).view(bs, dim, H, W).contiguous())
 
         # Reshaping
