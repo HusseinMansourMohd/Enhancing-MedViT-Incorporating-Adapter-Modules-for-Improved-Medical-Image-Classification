@@ -49,6 +49,9 @@ class MedVit_adapter(nn.Module):
         self.embed_dim = embed_dim
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
+        self.norm1 = nn.BatchNorm2d(dim=15)
+        self.norm2 = nn.BatchNorm2d(dim=15)
+        self.norm3 = nn.BatchNorm2d(dim=15)
         
         self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
 
