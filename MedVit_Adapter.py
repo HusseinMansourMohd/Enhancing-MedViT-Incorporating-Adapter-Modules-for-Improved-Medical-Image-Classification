@@ -215,7 +215,7 @@ class MedVit_adapter(nn.Module):
         c4 = c[:, c2.size(1) + c3.size(1), :]
         c2 = c2.transpose(1,2).view(bs, dim, H * 2, W *2).contiguous()
         c3 = c3.transpose(1,2).view(bs*2, dim*2, H, W).contiguous()
-        c4 = c4.transpose(1,2).view(bs*2, dim*2, H//2, W//2).contiguous()
+        c4 = c4.transpose(1,2).view(bs*4, dim*4, H//2, W//2).contiguous()
 
         # Feature interpolation and addition
         if self.add_vit_feature:
