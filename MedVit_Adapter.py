@@ -49,11 +49,12 @@ class MedVit_adapter(nn.Module):
         self.embed_dim = embed_dim
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
+        self.num_classes = num_classes
         self.norm1 = nn.BatchNorm2d(64)
         self.norm2 = nn.BatchNorm2d(4)
         self.norm3 = nn.BatchNorm2d(4)
         self.norm4 = nn.BatchNorm2d(1)
-        self.proj_head = nn.Linear(73, num_classes)
+        
         
         self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
 
@@ -256,7 +257,8 @@ class MedVit_adapter(nn.Module):
         x = torch.cat([f1, f2, f3, f4], dim=1)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        print("x:",x)
+        print("x:",x.shape)
+        self.proj_head = nn.Linear(73, self.num_classes)
         x = self.proj_head(x)
 
         return x
