@@ -256,10 +256,10 @@ class MedVit_adapter(nn.Module):
         
         x = torch.cat([f1, f2, f3, f4], dim=1)
         x = self.avgpool(x)
-        x = torch.flatten(x, 1)
+        x = torch.flatten(x, 1).to('cuda')
         print("x:",x.shape)
-        self.proj_head = nn.Linear(73, self.num_classes)
-        x = self.proj_head(x)
+        self.proj_head = nn.Linear(73, self.num_classes).to('cuda')
+        x = self.proj_head(x).to('cuda')
 
         return x
 
