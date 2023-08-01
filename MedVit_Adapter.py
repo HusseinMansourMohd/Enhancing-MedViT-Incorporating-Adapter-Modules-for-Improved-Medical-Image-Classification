@@ -223,12 +223,12 @@ class MedVit_adapter(nn.Module):
 
 
         # Feature interpolation and addition
-        if self.add_vit_feature:
-            x1, x2, x3, x4 = outs
-            x1 = F.interpolate(x1, scale_factor=4, mode='bilinear', align_corners=False)
-            x2 = F.interpolate(x2, scale_factor=2, mode='bilinear', align_corners=False)
-            x4 = F.interpolate(x4, scale_factor=0.5, mode='bilinear', align_corners=False)
-            c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
+        
+        x1, x2, x3, x4 = outs
+        x1 = F.interpolate(x1, scale_factor=4, mode='bilinear', align_corners=False)
+        x2 = F.interpolate(x2, scale_factor=2, mode='bilinear', align_corners=False)
+        x4 = F.interpolate(x4, scale_factor=0.5, mode='bilinear', align_corners=False)
+        c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
 
         # Final Norm and output
         f1 = self.norm1(c1)
