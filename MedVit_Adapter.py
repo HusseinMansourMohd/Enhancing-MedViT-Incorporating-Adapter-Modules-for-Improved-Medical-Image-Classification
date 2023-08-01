@@ -41,18 +41,17 @@ class MedVit_adapter(nn.Module):
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=False, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
-                 cffn_ratio=0.25, deform_ratio=1.0, pretrained=None, output_channel=512,dim=15,
+                 cffn_ratio=0.25, deform_ratio=1.0, pretrained=None, output_channel=512,
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
 
         super(MedVit_adapter, self).__init__()
         self.pos_embed = None 
         self.embed_dim = embed_dim
-        self.dim = dim
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
-        self.norm1 = nn.BatchNorm2d(15)
-        self.norm2 = nn.BatchNorm2d(15)
-        self.norm3 = nn.BatchNorm2d(15)
+        self.norm1 = nn.BatchNorm2d(64)
+        self.norm2 = nn.BatchNorm2d(64)
+        self.norm3 = nn.BatchNorm2d(64)
         
         self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
 
