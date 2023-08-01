@@ -181,7 +181,6 @@ class MedVit_adapter(nn.Module):
 
     def forward(self, x):
         deform_inputs1 , deform_inputs2 = deform_inputs(x)
-
         c1, c2, c3, c4 = self.spm(x)
         x = self.stem(x)
         # SRM forward
@@ -198,16 +197,10 @@ class MedVit_adapter(nn.Module):
             pos_embed = np.identity(56)
         pos_embed = torch.from_numpy(pos_embed).cuda()
         
-        pos_embed = pos_embed.unsqueeze(0).unsqueeze(0)  # Add two dimensions at the start
+        pos_embed = pos_embed.unsqueeze(0).unsqueeze(0) 
         pos_embed = pos_embed.expand(x.shape[0], x.shape[1], x.shape[2], x.shape[3])
-        print(x.shape)
-        print(pos_embed.shape)
         x = x + pos_embed
        
-        
-
-        
-        
         # Interactions
         outs = []
         for i, interaction in enumerate(self.interactions):
@@ -223,41 +216,20 @@ class MedVit_adapter(nn.Module):
         c3 = c3.transpose(1,2).reshape(bs, dim, H, W).contiguous()
         if len(c4.shape) < 3:
                 c4 = c4.unsqueeze(2)
-        print("c2.shape:",c2.shape)
-        print("c3.shape",c3.shape)
-        
         c4 = c4.transpose(1,2)
         c4 = c4.reshape(bs, c4.shape[1], c4.shape[1], c4.shape[2]).contiguous()
-        print("c4.shape:",c4.shape)
-
-
-        # Feature interpolation and addition
-        # if self.add_vit_feature:
-        #     x1, x2, x3, x4 = outs
-        #     x1 = F.interpolate(x1, scale_factor=4, mode='bilinear', align_corners=False)
-        #     x2 = F.interpolate(x2, scale_factor=2, mode='bilinear', align_corners=False)
-        #     x4 = F.interpolate(x4, scale_factor=0.5, mode='bilinear', align_corners=False)
-        #     c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
 
         # Final Norm and output
         f1 = self.norm1(c1)
         f2 = self.norm2(c2)
         f3 = self.norm3(c3)
         f4 = self.norm4(c4)
-
-        print("f1 shape: ", f1.shape)
-        print("f2 shape: ", f2.shape)
-        print("f3 shape: ", f3.shape)
-        print("f4 shape: ", f4.shape)
-
         f2 = nn.AdaptiveAvgPool2d((56, 56))(f2)
         f3 = nn.AdaptiveAvgPool2d((56, 56))(f3)
         f4 = nn.AdaptiveAvgPool2d((56, 56))(f4)
-        
         x = torch.cat([f1, f2, f3, f4], dim=1)
         x = self.avgpool(x)
         x = torch.flatten(x, 1).to('cuda')
-        print("x:",x.shape)
         self.proj_head = nn.Linear(73, self.num_classes).to('cuda')
         x = self.proj_head(x).to('cuda')
 
