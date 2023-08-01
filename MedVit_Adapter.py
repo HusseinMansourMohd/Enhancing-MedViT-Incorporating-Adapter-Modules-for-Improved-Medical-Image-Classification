@@ -223,9 +223,10 @@ class MedVit_adapter(nn.Module):
                 c4 = c4.unsqueeze(2)
         print("c2.shape:",c2.shape)
         print("c3.shape",c3.shape)
-        print("c4.shape:",c4.shape)
+        
         c4 = c4.transpose(1,2)
         c4 = c4.reshape(bs, c4.shape[1], c4.shape[1], c4.shape[2]).contiguous()
+        print("c4.shape:",c4.shape)
 
 
         # Feature interpolation and addition
@@ -241,6 +242,16 @@ class MedVit_adapter(nn.Module):
         f2 = self.norm2(c2)
         f3 = self.norm3(c3)
         f4 = self.norm4(c4)
+
+        print("f1 shape: ", f1.shape)
+        print("f2 shape: ", f2.shape)
+        print("f3 shape: ", f3.shape)
+        print("f4 shape: ", f4.shape)
+
+        f2 = nn.AdaptiveAvgPool2d((56, 56))(f2)
+        f3 = nn.AdaptiveAvgPool2d((56, 56))(f3)
+        f4 = nn.AdaptiveAvgPool2d((56, 56))(f4)
+        
         x = torch.cat([f1, f2, f3, f4], dim=1)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
