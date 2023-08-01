@@ -217,8 +217,9 @@ class MedVit_adapter(nn.Module):
         c3 = c3.transpose(1,2).reshape(bs, dim, H, W).contiguous()
         if len(c4.shape) < 3:
                 c4 = c4.unsqueeze(2)
+        print("c4.shape:",c4.shape)
         c4 = c4.transpose(1,2)
-        c4 = c4.reshape(bs, c4.shape[1]//2, 2, c4.shape[2]).contiguous()
+        c4 = c4.reshape(bs, c4.shape[0], c4.shape[1], c4.shape[2]).contiguous()
 
 
         # Feature interpolation and addition
