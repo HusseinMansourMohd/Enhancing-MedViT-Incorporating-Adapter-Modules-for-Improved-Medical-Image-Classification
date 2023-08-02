@@ -79,6 +79,9 @@ class MedVit_adapter(nn.Module):
         self.norm2.apply(self._init_weights)
         self.norm3.apply(self._init_weights)
         self.norm4.apply(self._init_weights)
+        self.level_embed.apply(self._init_weights)
+        self.spm.apply(self._init_weights)
+        self.interactions.apply(self._init_weights)
         normal_(self.patch_embed)
 
     
@@ -108,9 +111,7 @@ class MedVit_adapter(nn.Module):
                              with_cp=self.with_cp)
                              for i in range(len([]))
         ])
-        self.level_embed.apply(self._init_weights)
-        self.spm.apply(self._init_weights)
-        self.interactions.apply(self._init_weights)
+       
 
     def _create_features(self, depths, strides, sr_ratios, head_dim, mix_block_ratio, attn_drop, drop, path_dropout):
         dpr = [x.item() for x in torch.linspace(0, path_dropout, sum(depths))]  # stochastic depth decay rule
