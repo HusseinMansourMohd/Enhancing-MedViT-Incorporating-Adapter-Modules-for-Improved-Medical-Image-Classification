@@ -45,7 +45,7 @@ class MedVit_adapter(nn.Module):
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=True, pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
-                 cffn_ratio=0.25, deform_ratio=1.0, pretrained=None, output_channel=512,
+                 cffn_ratio=0.25, add_vit_feature=True,  deform_ratio=1.0, pretrained=None, output_channel=512,
                  use_extra_extractor=True, with_cp=False, *args, **kwargs):
 
         super(MedVit_adapter, self).__init__()
@@ -54,6 +54,7 @@ class MedVit_adapter(nn.Module):
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
         self.num_classes = num_classes
+        self.add_vit_featuer = add_vit_feature     
         self.norm1 = nn.BatchNorm2d(64)
         self.norm2 = nn.BatchNorm2d(4)
         self.norm3 = nn.BatchNorm2d(4)
@@ -255,6 +256,13 @@ class MedVit_adapter(nn.Module):
                 c4 = c4.unsqueeze(2)
         c4 = c4.transpose(1,2)
         c4 = c4.reshape(bs, c4.shape[1], c4.shape[1], c4.shape[2]).contiguous()
+
+        if self.add_vit_feature:
+            x1, x2, x3, x4 = outs
+            x1 = F.interpolate(x1, scale_factor=4, mode='bilinear', align_corners=False)
+            x2 = F.interpolate(x2, scale_factor=2, mode='bilinear', align_corners=False)
+            x4 = F.interpolate(x4, scale_factor=0.5, mode='bilinear', align_corners=False)
+            c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
 
         # Final Norm and output
         f1 = nn.AdaptiveAvgPool2d((28, 28))(c1)
