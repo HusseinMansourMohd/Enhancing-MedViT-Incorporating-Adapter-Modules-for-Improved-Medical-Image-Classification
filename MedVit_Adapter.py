@@ -54,7 +54,7 @@ class MedVit_adapter(nn.Module):
         self.stem_chs = stem_chs
         input_channel = stem_chs[-1]
         self.num_classes = num_classes
-        self.add_vit_featuer = add_vit_feature     
+        self.add_vit_featuer = True     
         self.norm1 = nn.BatchNorm2d(64)
         self.norm2 = nn.BatchNorm2d(4)
         self.norm3 = nn.BatchNorm2d(4)
