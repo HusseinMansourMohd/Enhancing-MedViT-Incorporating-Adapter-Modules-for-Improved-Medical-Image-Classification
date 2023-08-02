@@ -1,10 +1,13 @@
 from functools import partial
 from torch import nn
+import math
 import numpy as np
 from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 import torch
 from MedVit import ConvBNReLU,ECB,LTB,PatchEmbed
 from timm.models.registry import register_model
+from torch.nn.init import normal_
+from timm.models.layers import trunc_normal_
 import torch.utils.checkpoint as checkpoint
 import torch.nn.functional as F
 
@@ -55,6 +58,7 @@ class MedVit_adapter(nn.Module):
         self.norm2 = nn.BatchNorm2d(4)
         self.norm3 = nn.BatchNorm2d(4)
         self.norm4 = nn.BatchNorm2d(1)
+
         
         
         self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
@@ -69,6 +73,13 @@ class MedVit_adapter(nn.Module):
                                            mix_block_ratio, attn_drop, drop, path_dropout)
         self.norm = nn.BatchNorm2d(output_channel, eps=NORM_EPS)
         self._initialize_final_layers(output_channel, num_classes)
+
+        self.norm.apply(self._init_weights)
+        self.norm1.apply(self._init_weights)
+        self.norm2.apply(self._init_weights)
+        self.norm3.apply(self._init_weights)
+        self.norm4.apply(self._init_weights)
+        normal_(self.patch_embed)
 
     
 
@@ -97,6 +108,9 @@ class MedVit_adapter(nn.Module):
                              with_cp=self.with_cp)
                              for i in range(len([]))
         ])
+        self.level_embed.apply(self._init_weights)
+        self.spm.apply(self._init_weights)
+        self.interactions.apply(self._init_weights)
 
     def _create_features(self, depths, strides, sr_ratios, head_dim, mix_block_ratio, attn_drop, drop, path_dropout):
         dpr = [x.item() for x in torch.linspace(0, path_dropout, sum(depths))]  # stochastic depth decay rule
@@ -166,6 +180,10 @@ class MedVit_adapter(nn.Module):
         self.proj_head = nn.Sequential(
             nn.Linear(output_channel, num_classes),
         )
+        self.avgpool.apply(self._init_weights)
+        self.proj_head.apply(self._init_weights)
+
+
     
     def _add_level_embed(self, c2, c3, c4):
         c2 = c2 + self.level_embed[0]
@@ -179,6 +197,23 @@ class MedVit_adapter(nn.Module):
         pos_embed = F.interpolate(pos_embed, size=(H, W), mode='bicubic', align_corners=False).\
             reshape(1, -1, H * W).permute(0, 2, 1)
         return pos_embed
+    
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm) or isinstance(m, nn.BatchNorm2d):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+        elif isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+            fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            fan_out //= m.groups
+            m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
+            if m.bias is not None:
+                m.bias.data.zero_()
+    
+
 
     def forward(self, x):
         deform_inputs1 , deform_inputs2 = deform_inputs(x)
@@ -224,13 +259,16 @@ class MedVit_adapter(nn.Module):
         c4 = c4.reshape(bs, c4.shape[1], c4.shape[1], c4.shape[2]).contiguous()
 
         # Final Norm and output
-        f1 = self.norm1(c1)
-        f2 = self.norm2(c2)
-        f3 = self.norm3(c3)
-        f4 = self.norm4(c4)
-        f2 = nn.AdaptiveAvgPool2d((56, 56))(f2)
-        f3 = nn.AdaptiveAvgPool2d((56, 56))(f3)
-        f4 = nn.AdaptiveAvgPool2d((56, 56))(f4)
+        f1 = nn.AdaptiveAvgPool2d((28, 28))(c1)
+        f2 = nn.AdaptiveAvgPool2d((28, 28))(c2)
+        f3 = nn.AdaptiveAvgPool2d((28, 28))(c3)
+        f4 = nn.AdaptiveAvgPool2d((28, 28))(c4)
+
+        f1 = self.norm1(f1)
+        f2 = self.norm2(f2)
+        f3 = self.norm3(f3)
+        f4 = self.norm4(f4)
+        
         x = torch.cat([f1, f2, f3, f4], dim=1)
         x = self.avgpool(x)
         x = torch.flatten(x, 1).to('cuda')
