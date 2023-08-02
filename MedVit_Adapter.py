@@ -79,7 +79,7 @@ class MedVit_adapter(nn.Module):
         self.norm2.apply(self._init_weights)
         self.norm3.apply(self._init_weights)
         self.norm4.apply(self._init_weights)
-        normal_(self.patch_embed)
+        self.patch_embed.apply(self._init_weights)
 
     
 
