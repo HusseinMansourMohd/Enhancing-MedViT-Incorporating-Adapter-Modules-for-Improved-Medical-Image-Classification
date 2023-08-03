@@ -11,6 +11,7 @@ import torch.utils.checkpoint as checkpoint
 from einops import rearrange
 from timm.models.layers import DropPath, trunc_normal_
 from timm.models.registry import register_model
+from transformers import DeformableDetrConfig, DeformableDetrModel
 from MedVit import ECB, ConvBNReLU, LTB
 import torch.nn.functional as F
 from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
@@ -20,15 +21,20 @@ from torch.nn.init import normal_
 
 NORM_EPS = 1e-5
 
-class MedViT(nn.Module):
+class MedViT_Adapter_Comb(nn.Module):
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
-                 use_checkpoint=False,   conv_inplane=64, n_points=4,
+                 use_checkpoint=False,pretrain_size=True ,conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
                  cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, 
                  use_extra_extractor=True, with_cp=False,):
-        super(MedViT, self).__init__()
+        super(MedViT_Adapter_Comb, self).__init__()
         self.use_checkpoint = use_checkpoint
+        self.cls_token = None
+        self.num_block = len(self.blocks)
+        self.pretrain_size = (pretrain_size, pretrain_size)
+        self.interaction_indexes = interaction_indexes
+        self.add_vit_feature = add_vit_feature
 
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
@@ -89,6 +95,36 @@ class MedViT(nn.Module):
                 m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
                 if m.bias is not None:
                     m.bias.data.zero_()
+        
+        def _get_pos_embed(self, pos_embed, H, W):
+            pos_embed = pos_embed.reshape(
+                1, self.pretrain_size[0] // 16, self.pretrain_size[1] // 16, -1).permute(0, 3, 1, 2)
+            pos_embed = F.interpolate(pos_embed, size=(H, W), mode='bicubic', align_corners=False).\
+                reshape(1, -1, H * W).permute(0, 2, 1)
+            return pos_embed
+
+        def _init_deform_weights(self, m):
+            config = DeformableDetrConfig(
+                use_timm_backbone=True,
+                backbone_config=None,
+                num_channels=3,
+                num_queries=300,
+                d_model=dim,
+                encoder_layers=n_levels,
+                decoder_layers=n_levels,
+                encoder_attention_heads=num_heads,
+                decoder_attention_heads=num_heads,
+            )
+            if isinstance(m, DeformableDetrModel(config)):
+                m._reset_parameters()
+            
+
+        def _add_level_embed(self, c2, c3, c4):
+            c2 = c2 + self.level_embed[0]
+            c3 = c3 + self.level_embed[1]
+            c4 = c4 + self.level_embed[2]
+            return c2, c3, c4
+
 
         
 
