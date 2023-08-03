@@ -11,7 +11,9 @@ import torch.utils.checkpoint as checkpoint
 from einops import rearrange
 from timm.models.layers import DropPath, trunc_normal_
 from timm.models.registry import register_model
-# from ops.modules import MSDeformAttn
+from MedVit import ECB, ConvBNReLU, LTB
+import torch.nn.functional as F
+from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 from torch import nn
 from utils import merge_pre_bn
 from torch.nn.init import normal_
@@ -21,9 +23,9 @@ NORM_EPS = 1e-5
 class MedViT(nn.Module):
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
-                 use_checkpoint=False,  pretrain_size=224, num_heads=12, conv_inplane=64, n_points=4,
+                 use_checkpoint=False,   conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
-                 cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, pretrained=None,
+                 cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, 
                  use_extra_extractor=True, with_cp=False,):
         super(MedViT, self).__init__()
         self.use_checkpoint = use_checkpoint
@@ -225,4 +227,3 @@ class MedViT(nn.Module):
         out = self.fc(features)
 
         return out
-        #return x
