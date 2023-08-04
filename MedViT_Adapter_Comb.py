@@ -127,13 +127,10 @@ class MedViT_Adapter_Comb(nn.Module):
             c4 = c4 + self.level_embed[2]
             return c2, c3, c4
 
-
-        
-
         input_channel = stem_chs[-1]
         features = []
         idx = 0
-        dpr = [x.item() for x in torch.linspace(0, path_dropout, sum(depths))]  # stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, path_dropout, sum(depths))]  
         for stage_id in range(len(depths)):
             numrepeat = depths[stage_id]
             output_channels = self.stage_out_channels[stage_id]
@@ -200,7 +197,6 @@ class MedViT_Adapter_Comb(nn.Module):
         x = self.norm(x)
         x = self.avgpool(x)
         x_flattened = torch.flatten(x, 1)
-        #x = self.proj_head(x)
         #adapter Network
         deform_inputs1, deform_inputs2 = deform_inputs(x)
         
