@@ -3,7 +3,6 @@ from functools import partial
 
 import torch
 import torch.nn as nn
-#from models.ops import ms_deform_attn 
 from transformers import DeformableDetrConfig, DeformableDetrModel
 from timm.models.layers import DropPath
 import torch.utils.checkpoint as cp
@@ -256,7 +255,6 @@ class SpatialPriorModule(nn.Module):
         c4 = self.fc4(c4)
 
         bs, dim, _, _ = c1.shape
-        # c1 = c1.view(bs, dim, -1).transpose(1, 2)  # 4s
         c2 = c2.view(bs, dim, -1).transpose(1, 2)  # 8s
         c3 = c3.view(bs, dim, -1).transpose(1, 2)  # 16s
         c4 = c4.view(bs, dim, -1).transpose(1, 2)  # 32s
