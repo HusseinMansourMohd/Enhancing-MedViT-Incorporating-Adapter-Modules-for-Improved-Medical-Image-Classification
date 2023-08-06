@@ -29,7 +29,7 @@ class MedViT_Adapter_Comb(nn.Module):
                  use_checkpoint=False,pretrain_size=True ,conv_inplane=64, n_points=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
                  cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, dim=224, n_levels = 6,
-                 use_extra_extractor=True, with_cp=False,):
+                 use_extra_extractor=True, with_cp=False, embed_dim=64):
         super(MedViT_Adapter_Comb, self).__init__()
         self.use_checkpoint = use_checkpoint
         self.cls_token = None
@@ -40,6 +40,7 @@ class MedViT_Adapter_Comb(nn.Module):
         self.dim = dim 
         self.n_levels = n_levels
         self.deform_num_heads = deform_num_heads
+        self.embed_dim = embed_dim
 
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
