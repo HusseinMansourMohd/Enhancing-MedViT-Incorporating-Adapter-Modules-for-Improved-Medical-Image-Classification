@@ -26,7 +26,7 @@ NORM_EPS = 1e-5
 class MedViT_Adapter_Comb(nn.Module):
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
-                 use_checkpoint=False,pretrain_size=True ,conv_inplane=64, n_points=4,
+                 use_checkpoint=False,pretrain_size=True ,conv_inplane=64, n_points=4, blocks=4,
                  deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
                  cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, dim=224, n_levels = 6,
                  use_extra_extractor=True, with_cp=False, embed_dim=64):
@@ -41,6 +41,7 @@ class MedViT_Adapter_Comb(nn.Module):
         self.n_levels = n_levels
         self.deform_num_heads = deform_num_heads
         self.embed_dim = embed_dim
+        self.blocks = blocks
 
         self.stage_out_channels = [[96] * (depths[0]),
                                    [192] * (depths[1] - 1) + [256],
