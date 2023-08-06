@@ -190,7 +190,7 @@ class MedViT_Adapter_Comb(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        
+
         #medVit Network
         x = self.stem(x)
         for idx, layer in enumerate(self.features):
@@ -265,3 +265,20 @@ class MedViT_Adapter_Comb(nn.Module):
         out = self.fc(features)
 
         return out
+    
+
+@register_model
+def MedViT_adapter_small(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedViT_Adapter_Comb(embed_dim=64, stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
+    return model
+
+@register_model
+def MedViT_adapter_base(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedViT_Adapter_Comb(embed_dim=64, stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, **kwargs)
+    return model
+
+@register_model
+def MedViT_adapter_large(pretrained=False, pretrained_cfg=None, **kwargs):
+    model = MedViT_Adapter_Comb(embed_dim=64, stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, **kwargs)
+    return model
+
