@@ -190,6 +190,7 @@ class MedViT_Adapter_Comb(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
+        
         #medVit Network
         x = self.stem(x)
         for idx, layer in enumerate(self.features):
