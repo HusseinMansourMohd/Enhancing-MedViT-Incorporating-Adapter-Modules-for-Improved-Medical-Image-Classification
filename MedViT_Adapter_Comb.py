@@ -86,49 +86,7 @@ class MedViT_Adapter_Comb(nn.Module):
         self.apply(self._init_deform_weights)
         normal_(self.level_embed)
 
-        def _init_weights(self, m):
-            if isinstance(m, nn.Linear):
-                trunc_normal_(m.weight, std=.02)
-                if isinstance(m, nn.Linear) and m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.LayerNorm) or isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.bias, 0)
-                nn.init.constant_(m.weight, 1.0)
-            elif isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-                fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                fan_out //= m.groups
-                m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-                if m.bias is not None:
-                    m.bias.data.zero_()
         
-        def _get_pos_embed(self, pos_embed, H, W):
-            pos_embed = pos_embed.reshape(
-                1, self.pretrain_size[0] // 16, self.pretrain_size[1] // 16, -1).permute(0, 3, 1, 2)
-            pos_embed = F.interpolate(pos_embed, size=(H, W), mode='bicubic', align_corners=False).\
-                reshape(1, -1, H * W).permute(0, 2, 1)
-            return pos_embed
-
-        def _init_deform_weights(self, m):
-            config = DeformableDetrConfig(
-                use_timm_backbone=True,
-                backbone_config=None,
-                num_channels=3,
-                num_queries=300,
-                d_model=dim,
-                encoder_layers=n_levels,
-                decoder_layers=n_levels,
-                encoder_attention_heads=deform_num_heads,
-                decoder_attention_heads=deform_num_heads,
-            )
-            if isinstance(m, DeformableDetrModel(config)):
-                m._reset_parameters()
-            
-
-        def _add_level_embed(self, c2, c3, c4):
-            c2 = c2 + self.level_embed[0]
-            c3 = c3 + self.level_embed[1]
-            c4 = c4 + self.level_embed[2]
-            return c2, c3, c4
 
         input_channel = stem_chs[-1]
         features = []
@@ -168,6 +126,50 @@ class MedViT_Adapter_Comb(nn.Module):
         self.stage_out_idx = [sum(depths[:idx + 1]) - 1 for idx in range(len(depths))]
         print('initialize_weights...')
         self._initialize_weights()
+
+    def _init_weights(self, m):
+            if isinstance(m, nn.Linear):
+                trunc_normal_(m.weight, std=.02)
+                if isinstance(m, nn.Linear) and m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.LayerNorm) or isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.bias, 0)
+                nn.init.constant_(m.weight, 1.0)
+            elif isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+                fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                fan_out //= m.groups
+                m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
+                if m.bias is not None:
+                    m.bias.data.zero_()
+    
+    def _get_pos_embed(self, pos_embed, H, W):
+        pos_embed = pos_embed.reshape(
+            1, self.pretrain_size[0] // 16, self.pretrain_size[1] // 16, -1).permute(0, 3, 1, 2)
+        pos_embed = F.interpolate(pos_embed, size=(H, W), mode='bicubic', align_corners=False).\
+            reshape(1, -1, H * W).permute(0, 2, 1)
+        return pos_embed
+
+    def _init_deform_weights(self, m):
+        config = DeformableDetrConfig(
+            use_timm_backbone=True,
+            backbone_config=None,
+            num_channels=3,
+            num_queries=300,
+            d_model=dim,
+            encoder_layers=n_levels,
+            decoder_layers=n_levels,
+            encoder_attention_heads=deform_num_heads,
+            decoder_attention_heads=deform_num_heads,
+        )
+        if isinstance(m, DeformableDetrModel(config)):
+            m._reset_parameters()
+        
+
+    def _add_level_embed(self, c2, c3, c4):
+        c2 = c2 + self.level_embed[0]
+        c3 = c3 + self.level_embed[1]
+        c4 = c4 + self.level_embed[2]
+        return c2, c3, c4
 
     def merge_bn(self):
         self.eval()
