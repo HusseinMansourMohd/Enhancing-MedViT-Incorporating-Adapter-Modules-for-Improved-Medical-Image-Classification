@@ -194,7 +194,7 @@ class MedViT_Adapter_Comb(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-
+        y=x
         #medVit Network
         x = self.stem(x)
         for idx, layer in enumerate(self.features):
@@ -209,7 +209,7 @@ class MedViT_Adapter_Comb(nn.Module):
         deform_inputs1, deform_inputs2 = deform_inputs(x)
         
         # SPM forward
-        c1, c2, c3, c4 = self.spm(x)
+        c1, c2, c3, c4 = self.spm(y)
         c2, c3, c4 = self._add_level_embed(c2, c3, c4)
         c = torch.cat([c2, c3, c4], dim=1)
 
