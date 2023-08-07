@@ -150,16 +150,19 @@ class MedViT_Adapter_Comb(nn.Module):
         return pos_embed
 
     def _init_deform_weights(self, m):
+        dim = self.dim
+        n_levels = self.n_levels
+        deform_num_heads = self.deform_num_heads
         config = DeformableDetrConfig(
             use_timm_backbone=True,
             backbone_config=None,
             num_channels=3,
             num_queries=300,
-            d_model=self.dim,
-            encoder_layers=self.n_levels,
-            decoder_layers=self.n_levels,
-            encoder_attention_heads= self.deform_num_heads,
-            decoder_attention_heads= self.deform_num_heads,
+            d_model=dim,
+            encoder_layers=n_levels,
+            decoder_layers=n_levels,
+            encoder_attention_heads= deform_num_heads,
+            decoder_attention_heads= deform_num_heads,
         )
         if isinstance(m, DeformableDetrModel(config)):
             m._reset_parameters()
