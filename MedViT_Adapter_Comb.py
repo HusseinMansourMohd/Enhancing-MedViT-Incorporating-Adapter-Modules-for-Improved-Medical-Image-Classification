@@ -155,11 +155,11 @@ class MedViT_Adapter_Comb(nn.Module):
             backbone_config=None,
             num_channels=3,
             num_queries=300,
-            d_model=dim,
-            encoder_layers=n_levels,
-            decoder_layers=n_levels,
-            encoder_attention_heads=deform_num_heads,
-            decoder_attention_heads=deform_num_heads,
+            d_model=self.dim,
+            encoder_layers=self.n_levels,
+            decoder_layers=self.n_levels,
+            encoder_attention_heads= self.deform_num_heads,
+            decoder_attention_heads= self.deform_num_heads,
         )
         if isinstance(m, DeformableDetrModel(config)):
             m._reset_parameters()
