@@ -216,10 +216,12 @@ class MedViT_Adapter_Comb(nn.Module):
 
         # Interaction
         outs = list()
-        for i, layer in enumerate(self.interactions):
+        for i, interaction in enumerate(self.interactions):
             indexes = self.interaction_indexes[i]
-            x, c = layer(x, c, self.blocks[indexes[0]:indexes[-1] + 1],
-                         deform_inputs1, deform_inputs2, H, W)
+            if self.use_checkpoint:
+                x, c = checkpoint.checkpoint(interaction, x, c, self.blocks[indexes[0]:indexes[-1] + 1], deform_inputs1, deform_inputs2, H, W)
+            else:
+                x, c = interaction(x, c, self.blocks[indexes[0]:indexes[-1] + 1], deform_inputs1, deform_inputs2, H, W)
             outs.append(x.transpose(1, 2).view(bs, dim, H, W).contiguous())
         
         # Split & Reshape
