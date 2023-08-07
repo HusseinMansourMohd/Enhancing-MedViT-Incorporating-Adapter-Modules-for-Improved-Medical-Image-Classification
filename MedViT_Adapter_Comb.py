@@ -164,8 +164,7 @@ class MedViT_Adapter_Comb(nn.Module):
             encoder_attention_heads= deform_num_heads,
             decoder_attention_heads= deform_num_heads,
         )
-        if isinstance(m, DeformableDetrModel(config)):
-            m._reset_parameters()
+        DeformableDetrModel(config)
         
 
     def _add_level_embed(self, c2, c3, c4):
