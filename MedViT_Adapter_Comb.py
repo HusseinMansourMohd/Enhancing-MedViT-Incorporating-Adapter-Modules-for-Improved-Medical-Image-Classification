@@ -25,7 +25,7 @@ class MedViT_Adapter_Comb(nn.Module):
     def __init__(self, stem_chs, depths, path_dropout, attn_drop=0, drop=0, num_classes=1000,
                  strides=[1, 2, 2, 2], sr_ratios=[8, 4, 2, 1], head_dim=32, mix_block_ratio=0.75,
                  use_checkpoint=False,pretrain_size=True ,conv_inplane=64, n_points=4, 
-                 deform_num_heads=6, init_values=0., interaction_indexes=None, with_cffn=True,
+                 deform_num_heads=12, init_values=0., interaction_indexes=None, with_cffn=True,
                  cffn_ratio=0.25, deform_ratio=1.0, add_vit_feature=True, dim=224, n_levels = 6,
                  use_extra_extractor=True, with_cp=False, embed_dim=64):
         super(MedViT_Adapter_Comb, self).__init__()
