@@ -12,7 +12,7 @@ from einops import rearrange
 from timm.models.layers import DropPath, trunc_normal_
 from timm.models.registry import register_model
 from transformers import DeformableDetrConfig, DeformableDetrModel
-from MedVit import ECB, ConvBNReLU, LTB
+from MedVit import ECB, ConvBNReLU, LTB, PatchEmbed
 import torch.nn.functional as F
 from adapter_modules import SpatialPriorModule, InteractionBlock, deform_inputs
 from torch import nn
@@ -39,6 +39,7 @@ class MedViT_Adapter_Comb(nn.Module):
         self.deform_num_heads = deform_num_heads
         self.embed_dim = embed_dim
         self.with_cp = with_cp
+        self.patch_embed = PatchEmbed(self.in_channels, self.mhsa_out_channels, stride)
         
 
         self.stage_out_channels = [[96] * (depths[0]),
