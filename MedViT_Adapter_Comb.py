@@ -38,6 +38,7 @@ class MedViT_Adapter_Comb(nn.Module):
         self.n_levels = n_levels
         self.deform_num_heads = deform_num_heads
         self.embed_dim = embed_dim
+        self.with_cp = with_cp
         
 
         self.stage_out_channels = [[96] * (depths[0]),
@@ -70,7 +71,7 @@ class MedViT_Adapter_Comb(nn.Module):
                              cffn_ratio=cffn_ratio, deform_ratio=deform_ratio,
                              extra_extractor=((True if i == len(interaction_indexes) - 1
                                                else False) and use_extra_extractor),
-                             with_cp=with_cp)
+                             cc=self.with_cp)
             for i in range(len(interaction_indexes))
         ])
         self.up = nn.ConvTranspose2d(embed_dim, embed_dim, 2, 2)
