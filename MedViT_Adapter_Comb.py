@@ -33,13 +33,14 @@ class MedViT_Adapter_Comb(nn.Module):
         self.cls_token = None
         self.pretrain_size = (pretrain_size, pretrain_size)
         self.interaction_indexes = interaction_indexes
+        input_channel = stem_chs[-1]
         self.add_vit_feature = add_vit_feature
         self.dim = dim 
         self.n_levels = n_levels
         self.deform_num_heads = deform_num_heads
         self.embed_dim = embed_dim
         self.with_cp = with_cp
-        self.patch_embed = PatchEmbed(self.in_channels, self.mhsa_out_channels, stride)
+        self.patch_embed = PatchEmbed(in_channels=input_channel, out_channels = 512)
         
 
         self.stage_out_channels = [[96] * (depths[0]),
