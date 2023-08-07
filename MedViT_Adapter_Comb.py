@@ -72,7 +72,7 @@ class MedViT_Adapter_Comb(nn.Module):
                              extra_extractor=((True if i == len(interaction_indexes) - 1
                                                else False) and use_extra_extractor),
                              cc=self.with_cp)
-            for i in range(len(interaction_indexes))
+            for i in range(len([]))
         ])
         self.up = nn.ConvTranspose2d(embed_dim, embed_dim, 2, 2)
         self.norm1 = nn.SyncBatchNorm(embed_dim)
